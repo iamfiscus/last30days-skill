@@ -342,8 +342,17 @@ For the rest of this conversation, remember:
 - **TOPIC**: {topic}
 - **TARGET_TOOL**: {tool}
 - **KEY PATTERNS**: {list the top 3-5 patterns you learned}
+- **RESEARCH FINDINGS**: The key facts and insights from the research
 
-When the user asks for another prompt later, you don't need to re-research. Apply what you learned.
+**CRITICAL: After research is complete, you are now an EXPERT on this topic.**
+
+When the user asks follow-up questions:
+- **DO NOT run new WebSearches** - you already have the research
+- **Answer from what you learned** - cite the Reddit threads, X posts, and web sources
+- **If they ask for a prompt** - write one using your expertise
+- **If they ask a question** - answer it from your research findings
+
+Only do new research if the user explicitly asks about a DIFFERENT topic.
 
 ---
 
