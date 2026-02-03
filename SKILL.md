@@ -17,8 +17,9 @@ This is the TEST version of /last30days with Bird CLI integration for free X/Twi
 **What's new:**
 - Bird CLI support for free X/Twitter search (no API key needed)
 - Uses browser cookies for authentication
-- Interactive prompt to install Bird if not found
-- Falls back to WebSearch if Bird not available (xAI keys ignored in test mode)
+- Auto-detects Bird if installed (no prompts)
+- Shows Bird install instructions in promo if not configured
+- Falls back to WebSearch if Bird not available
 
 Research ANY topic across Reddit, X, and the web. Surface what people are actually discussing, recommending, and debating right now.
 
@@ -73,12 +74,12 @@ The skill works in multiple modes based on available sources:
 
 **Option 1: Install Bird CLI (Recommended - Free X search)**
 
-The script will prompt to install Bird if not found. Or install manually:
 ```bash
 npm install -g @steipete/bird
 ```
 
 Then log into X (twitter.com) in your browser. Bird uses your browser session.
+The script auto-detects Bird if installed.
 
 **Option 2: API Keys (Optional)**
 
