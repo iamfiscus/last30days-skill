@@ -164,3 +164,90 @@ def search_x(
         return {"error": f"Invalid JSON response: {e}", "items": []}
     except Exception as e:
         return {"error": str(e), "items": []}
+
+
+def parse_bird_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Parse Bird response to match xai_x output format.
+
+    Args:
+        response: Raw Bird JSON response
+
+    Returns:
+        List of normalized item dicts matching xai_x.parse_x_response() format.
+    """
+    items = []
+
+    # Check for errors
+    if "error" in response and response["error"]:
+        _log(f"Bird error: {response['error']}")
+        return items
+
+    # Bird returns a list of tweets directly or under a key
+    raw_items = response if isinstance(response, list) else response.get("items", response.get("tweets", []))
+
+    if not isinstance(raw_items, list):
+        return items
+
+    for i, tweet in enumerate(raw_items):
+        if not isinstance(tweet, dict):
+            continue
+
+        # Extract URL - Bird uses permanent_url or we construct from id
+        url = tweet.get("permanent_url") or tweet.get("url", "")
+        if not url and tweet.get("id"):
+            screen_name = tweet.get("user", {}).get("screen_name", "")
+            if screen_name:
+                url = f"https://x.com/{screen_name}/status/{tweet['id']}"
+
+        if not url:
+            continue
+
+        # Parse date from created_at (e.g., "Wed Jan 15 14:30:00 +0000 2026")
+        date = None
+        created_at = tweet.get("created_at", "")
+        if created_at:
+            try:
+                # Try ISO format first
+                if "T" in created_at:
+                    dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                else:
+                    # Twitter format: "Wed Jan 15 14:30:00 +0000 2026"
+                    dt = datetime.strptime(created_at, "%a %b %d %H:%M:%S %z %Y")
+                date = dt.strftime("%Y-%m-%d")
+            except (ValueError, TypeError):
+                pass
+
+        # Extract user info
+        user = tweet.get("user", {})
+        author_handle = user.get("screen_name", "") or tweet.get("author_handle", "")
+
+        # Build engagement dict
+        engagement = {
+            "likes": tweet.get("like_count") or tweet.get("favorite_count"),
+            "reposts": tweet.get("retweet_count"),
+            "replies": tweet.get("reply_count"),
+            "quotes": tweet.get("quote_count"),
+        }
+        # Convert to int where possible
+        for key in engagement:
+            if engagement[key] is not None:
+                try:
+                    engagement[key] = int(engagement[key])
+                except (ValueError, TypeError):
+                    engagement[key] = None
+
+        # Build normalized item
+        item = {
+            "id": f"X{i+1}",
+            "text": str(tweet.get("text", tweet.get("full_text", ""))).strip()[:500],
+            "url": url,
+            "author_handle": author_handle.lstrip("@"),
+            "date": date,
+            "engagement": engagement if any(v is not None for v in engagement.values()) else None,
+            "why_relevant": "",  # Bird doesn't provide relevance explanations
+            "relevance": 0.7,  # Default relevance, let score.py re-rank
+        }
+
+        items.append(item)
+
+    return items
