@@ -7,6 +7,7 @@ Note: Each search costs 5 credits.
 
 import math
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 from . import http
 
@@ -49,7 +50,7 @@ def search_youtube(
         "Api-Key": api_key,
     }
 
-    url = f"{TUBELAB_SEARCH_URL}?q={topic}&limit={limit}"
+    url = f"{TUBELAB_SEARCH_URL}?q={quote(topic)}&limit={limit}"
 
     return http.get(url, headers=headers, timeout=30)
 

@@ -6,6 +6,7 @@ Requires a daily.dev Plus subscription and API key (DAILYDEV_API_KEY).
 
 import math
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 from . import http
 
@@ -48,7 +49,7 @@ def search_dailydev(
         "Authorization": f"Bearer {api_key}",
     }
 
-    url = f"{DAILYDEV_SEARCH_URL}?q={topic}&time=month&limit={limit}"
+    url = f"{DAILYDEV_SEARCH_URL}?q={quote(topic)}&time=month&limit={limit}"
 
     return http.get(url, headers=headers, timeout=30)
 
