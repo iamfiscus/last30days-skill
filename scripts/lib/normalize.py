@@ -4,7 +4,7 @@ from typing import Any, Dict, List, TypeVar, Union
 
 from . import dates, schema
 
-T = TypeVar("T", schema.RedditItem, schema.XItem, schema.WebSearchItem)
+T = TypeVar("T", schema.RedditItem, schema.XItem, schema.WebSearchItem, schema.DailyDevItem, schema.YouTubeItem)
 
 
 def filter_by_date_range(
@@ -147,6 +147,107 @@ def normalize_x_items(
             author_handle=item.get("author_handle", ""),
             date=date_str,
             date_confidence=date_confidence,
+            engagement=engagement,
+            relevance=item.get("relevance", 0.5),
+            why_relevant=item.get("why_relevant", ""),
+        ))
+
+    return normalized
+
+
+def normalize_dailydev_items(
+    items: List[Dict[str, Any]],
+    from_date: str,
+    to_date: str,
+) -> List[schema.DailyDevItem]:
+    """Normalize raw DailyDev items to schema.
+
+    Args:
+        items: Raw DailyDev items from API
+        from_date: Start of date range
+        to_date: End of date range
+
+    Returns:
+        List of DailyDevItem objects
+    """
+    normalized = []
+
+    for item in items:
+        # Parse engagement
+        engagement = None
+        eng_raw = item.get("engagement")
+        if isinstance(eng_raw, dict):
+            engagement = schema.Engagement(
+                score=eng_raw.get("score"),
+                num_comments=eng_raw.get("num_comments"),
+            )
+
+        # Determine date confidence
+        date_str = item.get("date")
+        date_confidence = dates.get_date_confidence(date_str, from_date, to_date)
+
+        normalized.append(schema.DailyDevItem(
+            id=item.get("id", ""),
+            title=item.get("title", ""),
+            url=item.get("url", ""),
+            source_name=item.get("source_name", ""),
+            author_name=item.get("author_name", ""),
+            author_username=item.get("author_username", ""),
+            date=date_str,
+            date_confidence=date_confidence,
+            summary=item.get("summary", ""),
+            tags=item.get("tags", []),
+            read_time=item.get("read_time"),
+            engagement=engagement,
+            relevance=item.get("relevance", 0.5),
+            why_relevant=item.get("why_relevant", ""),
+        ))
+
+    return normalized
+
+
+def normalize_youtube_items(
+    items: List[Dict[str, Any]],
+    from_date: str,
+    to_date: str,
+) -> List[schema.YouTubeItem]:
+    """Normalize raw YouTube items to schema.
+
+    Args:
+        items: Raw YouTube items from API
+        from_date: Start of date range
+        to_date: End of date range
+
+    Returns:
+        List of YouTubeItem objects
+    """
+    normalized = []
+
+    for item in items:
+        # Parse engagement
+        engagement = None
+        eng_raw = item.get("engagement")
+        if isinstance(eng_raw, dict):
+            engagement = schema.Engagement(
+                views=eng_raw.get("views"),
+                likes=eng_raw.get("likes"),
+                num_comments=eng_raw.get("num_comments"),
+            )
+
+        # Determine date confidence
+        date_str = item.get("date")
+        date_confidence = dates.get_date_confidence(date_str, from_date, to_date)
+
+        normalized.append(schema.YouTubeItem(
+            id=item.get("id", ""),
+            title=item.get("title", ""),
+            url=item.get("url", ""),
+            channel_name=item.get("channel_name", ""),
+            channel_id=item.get("channel_id", ""),
+            date=date_str,
+            date_confidence=date_confidence,
+            duration=item.get("duration"),
+            thumbnail=item.get("thumbnail", ""),
             engagement=engagement,
             relevance=item.get("relevance", 0.5),
             why_relevant=item.get("why_relevant", ""),

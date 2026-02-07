@@ -72,6 +72,22 @@ PROCESSING_MESSAGES = [
     "Organizing findings...",
 ]
 
+DAILYDEV_MESSAGES = [
+    "Searching developer articles...",
+    "Finding dev blog posts...",
+    "Exploring daily.dev...",
+    "Reading tech articles...",
+    "Scanning developer content...",
+]
+
+YOUTUBE_MESSAGES = [
+    "Searching YouTube videos...",
+    "Finding dev tutorials...",
+    "Discovering video content...",
+    "Scanning creator uploads...",
+    "Looking for video insights...",
+]
+
 WEB_ONLY_MESSAGES = [
     "Searching the web...",
     "Finding blogs and docs...",
@@ -92,6 +108,12 @@ PROMO_MESSAGE = f"""
   {Colors.CYAN}🔵 X (Twitter){Colors.RESET} - Real-time posts, likes, reposts from creators
      └─ Add TWITTERAPI_IO_KEY (uses twitterapi.io)
 
+  {Colors.GREEN}🟢 DailyDev{Colors.RESET} - Developer articles with real upvotes & comments
+     └─ Add DAILYDEV_API_KEY (uses daily.dev API)
+
+  {Colors.PURPLE}🟣 YouTube{Colors.RESET} - Video content with views, likes & comments
+     └─ Add TUBELAB_API_KEY (uses TubeLab API, --youtube flag)
+
 {Colors.DIM}Setup:{Colors.RESET} Edit {Colors.BOLD}~/.config/last30days/.env{Colors.RESET}
 {Colors.YELLOW}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.RESET}
 """
@@ -107,6 +129,12 @@ Right now you're using web search only. Add API keys to unlock:
 
   🔵 X (Twitter) - Real-time posts, likes, reposts from creators
      └─ Add TWITTERAPI_IO_KEY (uses twitterapi.io)
+
+  🟢 DailyDev - Developer articles with real upvotes & comments
+     └─ Add DAILYDEV_API_KEY (uses daily.dev API)
+
+  🟣 YouTube - Video content with views, likes & comments
+     └─ Add TUBELAB_API_KEY (uses TubeLab API, --youtube flag)
 
 Setup: Edit ~/.config/last30days/.env
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -237,6 +265,24 @@ class ProgressDisplay:
         if self.spinner:
             self.spinner.stop(f"{Colors.CYAN}X{Colors.RESET} Found {count} posts")
 
+    def start_dailydev(self):
+        msg = random.choice(DAILYDEV_MESSAGES)
+        self.spinner = Spinner(f"{Colors.GREEN}DailyDev{Colors.RESET} {msg}", Colors.GREEN)
+        self.spinner.start()
+
+    def end_dailydev(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.GREEN}DailyDev{Colors.RESET} Found {count} articles")
+
+    def start_youtube(self):
+        msg = random.choice(YOUTUBE_MESSAGES)
+        self.spinner = Spinner(f"{Colors.PURPLE}YouTube{Colors.RESET} {msg}", Colors.PURPLE)
+        self.spinner.start()
+
+    def end_youtube(self, count: int):
+        if self.spinner:
+            self.spinner.stop(f"{Colors.PURPLE}YouTube{Colors.RESET} Found {count} videos")
+
     def start_processing(self):
         msg = random.choice(PROCESSING_MESSAGES)
         self.spinner = Spinner(f"{Colors.PURPLE}Processing{Colors.RESET} {msg}", Colors.PURPLE)
@@ -246,15 +292,25 @@ class ProgressDisplay:
         if self.spinner:
             self.spinner.stop()
 
-    def show_complete(self, reddit_count: int, x_count: int):
+    def show_complete(self, reddit_count: int, x_count: int, dailydev_count: int = 0, youtube_count: int = 0):
         elapsed = time.time() - self.start_time
         if IS_TTY:
             sys.stderr.write(f"\n{Colors.GREEN}{Colors.BOLD}✓ Research complete{Colors.RESET} ")
             sys.stderr.write(f"{Colors.DIM}({elapsed:.1f}s){Colors.RESET}\n")
             sys.stderr.write(f"  {Colors.YELLOW}Reddit:{Colors.RESET} {reddit_count} threads  ")
-            sys.stderr.write(f"{Colors.CYAN}X:{Colors.RESET} {x_count} posts\n\n")
+            sys.stderr.write(f"{Colors.CYAN}X:{Colors.RESET} {x_count} posts")
+            if dailydev_count > 0:
+                sys.stderr.write(f"  {Colors.GREEN}DailyDev:{Colors.RESET} {dailydev_count} articles")
+            if youtube_count > 0:
+                sys.stderr.write(f"  {Colors.PURPLE}YouTube:{Colors.RESET} {youtube_count} videos")
+            sys.stderr.write("\n\n")
         else:
-            sys.stderr.write(f"✓ Research complete ({elapsed:.1f}s) - Reddit: {reddit_count} threads, X: {x_count} posts\n")
+            parts = [f"Reddit: {reddit_count} threads", f"X: {x_count} posts"]
+            if dailydev_count > 0:
+                parts.append(f"DailyDev: {dailydev_count} articles")
+            if youtube_count > 0:
+                parts.append(f"YouTube: {youtube_count} videos")
+            sys.stderr.write(f"✓ Research complete ({elapsed:.1f}s) - {', '.join(parts)}\n")
         sys.stderr.flush()
 
     def show_cached(self, age_hours: float = None):

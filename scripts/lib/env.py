@@ -59,6 +59,8 @@ def get_config() -> Dict[str, Any]:
         'XAI_API_KEY': twitterapi_key,  # Alias for get_available_sources() compat
         'OPENAI_MODEL_POLICY': os.environ.get('OPENAI_MODEL_POLICY') or file_env.get('OPENAI_MODEL_POLICY', 'auto'),
         'OPENAI_MODEL_PIN': os.environ.get('OPENAI_MODEL_PIN') or file_env.get('OPENAI_MODEL_PIN'),
+        'DAILYDEV_API_KEY': os.environ.get('DAILYDEV_API_KEY') or file_env.get('DAILYDEV_API_KEY'),
+        'TUBELAB_API_KEY': os.environ.get('TUBELAB_API_KEY') or file_env.get('TUBELAB_API_KEY'),
         '_HAS_OLD_XAI_KEY': has_old_xai_key and not has_new_key,
     }
 

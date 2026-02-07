@@ -73,6 +73,12 @@ OPENAI_API_KEY=
 
 # For X/Twitter research (uses twitterapi.io)
 TWITTERAPI_IO_KEY=
+
+# For developer articles (uses daily.dev API, auto-enables when present)
+DAILYDEV_API_KEY=
+
+# For YouTube videos (uses TubeLab API, requires --youtube flag)
+TUBELAB_API_KEY=
 ENVEOF
 
 chmod 600 ~/.config/last30days/.env
@@ -246,6 +252,8 @@ For **full/partial mode** (has API keys):
 ├─ 🟠 Reddit: {n} threads │ {sum} upvotes │ {sum} comments
 ├─ 🔵 X: {n} posts │ {sum} likes │ {sum} reposts
 ├─ 🌐 Web: {n} pages │ {domains}
+├─ 🟢 DailyDev: {n} articles │ {sum} upvotes (if enabled)
+├─ 🟣 YouTube: {n} videos │ {sum} views (if --youtube)
 └─ Top voices: r/{sub1}, r/{sub2} │ @{handle1}, @{handle2} │ {web_author} on {site}
 ```
 

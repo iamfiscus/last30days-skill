@@ -6,6 +6,10 @@
 
 The skill operates in three modes depending on available API keys: **reddit-only** (OpenAI key), **x-only** (twitterapi.io key), or **both** (full cross-validation). It uses automatic model selection for OpenAI, while X/Twitter search uses twitterapi.io's REST API directly (no LLM needed).
 
+Two optional supplementary sources are available:
+- **DailyDev** (daily.dev API): Developer articles with real upvotes/comments. Auto-enables when `DAILYDEV_API_KEY` is present.
+- **YouTube** (TubeLab API): Video content with views/likes/comments. Explicit opt-in via `--youtube` flag (5 credits/search).
+
 ## Architecture
 
 The orchestrator (`last30days.py`) coordinates discovery, enrichment, normalization, scoring, deduplication, and rendering. Each concern is isolated in `scripts/lib/`:
@@ -23,6 +27,8 @@ The orchestrator (`last30days.py`) coordinates discovery, enrichment, normalizat
 - **dedupe.py**: Near-duplicate detection via text similarity
 - **render.py**: Generate markdown and JSON outputs
 - **schema.py**: Type definitions and validation
+- **dailydev.py**: daily.dev API search for developer articles
+- **tubelab_yt.py**: TubeLab API search for YouTube videos
 
 ## Embedding in Other Skills
 
@@ -61,6 +67,8 @@ Options:
   --mock              Use fixtures instead of real API calls
   --emit=MODE         Output mode: compact|json|md|context|path (default: compact)
   --sources=MODE      Source selection: auto|reddit|x|both (default: auto)
+  --dailydev          Include daily.dev developer articles
+  --youtube           Include YouTube videos via TubeLab (5 credits/search)
 ```
 
 ## Output Files
@@ -73,3 +81,5 @@ All outputs are written to `~/.local/share/last30days/out/`:
 - `raw_openai.json` - Raw OpenAI API response
 - `raw_xai.json` - Raw xAI API response
 - `raw_reddit_threads_enriched.json` - Enriched Reddit thread data
+- `raw_dailydev.json` - Raw daily.dev API response (when enabled)
+- `raw_youtube.json` - Raw TubeLab API response (when --youtube used)

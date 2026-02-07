@@ -1,0 +1,56 @@
+{
+  "posts": [
+    {
+      "id": "abc123",
+      "title": "Building AI Agents with Claude Code",
+      "url": "https://dev.to/example/building-ai-agents",
+      "summary": "A comprehensive guide to building AI agents using Claude Code, covering tool use, multi-step reasoning, and production deployment patterns.",
+      "createdAt": "2026-01-20T10:30:00Z",
+      "upvotes": 142,
+      "comments": 23,
+      "author": {"name": "Jane Dev", "username": "janedev"},
+      "tags": ["ai", "claude", "agents"],
+      "readTime": 8,
+      "source": {"name": "DEV Community"}
+    },
+    {
+      "id": "def456",
+      "title": "LLM-Powered Code Review: What Actually Works in 2026",
+      "url": "https://medium.com/@techwriter/llm-code-review-2026",
+      "summary": "After six months of using AI code review tools in production, here are the patterns that actually improve code quality and the ones that waste time.",
+      "createdAt": "2026-01-15T14:20:00Z",
+      "upvotes": 89,
+      "comments": 31,
+      "author": {"name": "Tech Writer", "username": "techwriter"},
+      "tags": ["llm", "code-review", "developer-tools"],
+      "readTime": 12,
+      "source": {"name": "Medium"}
+    },
+    {
+      "id": "ghi789",
+      "title": "The State of Developer Productivity Tools",
+      "url": "https://blog.pragmaticengineer.com/dev-productivity-2026",
+      "summary": "A deep dive into the developer productivity landscape, comparing CLI tools, IDE extensions, and AI assistants that developers are actually using.",
+      "createdAt": "2026-01-25T08:00:00Z",
+      "upvotes": 256,
+      "comments": 45,
+      "author": {"name": "Gergely Orosz", "username": "gergelyorosz"},
+      "tags": ["productivity", "developer-tools", "engineering"],
+      "readTime": 15,
+      "source": {"name": "Pragmatic Engineer"}
+    },
+    {
+      "id": "jkl012",
+      "title": "Prompt Engineering Patterns for CLI Tools",
+      "url": "https://dev.to/promptdev/prompt-patterns-cli",
+      "summary": "Practical prompt engineering patterns specifically designed for command-line AI tools, with examples from real-world usage.",
+      "createdAt": "2026-01-18T16:45:00Z",
+      "upvotes": 67,
+      "comments": 12,
+      "author": {"name": "Prompt Dev", "username": "promptdev"},
+      "tags": ["prompts", "cli", "ai"],
+      "readTime": 6,
+      "source": {"name": "DEV Community"}
+    }
+  ]
+}

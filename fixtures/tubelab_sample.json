@@ -1,0 +1,52 @@
+{
+  "videos": [
+    {
+      "id": "dQw4w9WgXcQ",
+      "title": "Building Production AI Agents - Complete Tutorial",
+      "channelName": "Fireship",
+      "channelId": "UCsBjURrPoezykLs9EqgamOA",
+      "publishedAt": "2026-01-22T18:00:00Z",
+      "duration": 720,
+      "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      "views": 245000,
+      "likes": 12400,
+      "comments": 890
+    },
+    {
+      "id": "xvFZjo5PgG0",
+      "title": "Why Every Developer Should Try Claude Code in 2026",
+      "channelName": "Theo - t3.gg",
+      "channelId": "UCbRP3c757lWg9M-U7TyEkXA",
+      "publishedAt": "2026-01-18T14:30:00Z",
+      "duration": 1080,
+      "thumbnail": "https://i.ytimg.com/vi/xvFZjo5PgG0/hqdefault.jpg",
+      "views": 89000,
+      "likes": 5200,
+      "comments": 430
+    },
+    {
+      "id": "9bZkp7q19f0",
+      "title": "Advanced Prompt Engineering Techniques for CLI Tools",
+      "channelName": "AI Jason",
+      "channelId": "UCcefcZRL2oaA_uBNeo5UOWg",
+      "publishedAt": "2026-01-25T10:00:00Z",
+      "duration": 1560,
+      "thumbnail": "https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg",
+      "views": 156000,
+      "likes": 8900,
+      "comments": 620
+    },
+    {
+      "id": "kJQP7kiw5Fk",
+      "title": "The Developer Productivity Stack - What Actually Works",
+      "channelName": "ThePrimeagen",
+      "channelId": "UC8ENHE5xdFSwx71u3fDH5Xw",
+      "publishedAt": "2026-01-15T20:00:00Z",
+      "duration": 2400,
+      "thumbnail": "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
+      "views": 320000,
+      "likes": 18500,
+      "comments": 1200
+    }
+  ]
+}

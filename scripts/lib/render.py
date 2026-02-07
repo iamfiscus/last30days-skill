@@ -19,14 +19,18 @@ def _assess_data_freshness(report: schema.Report) -> dict:
     reddit_recent = sum(1 for r in report.reddit if r.date and r.date >= report.range_from)
     x_recent = sum(1 for x in report.x if x.date and x.date >= report.range_from)
     web_recent = sum(1 for w in report.web if w.date and w.date >= report.range_from)
+    dailydev_recent = sum(1 for d in report.dailydev if d.date and d.date >= report.range_from)
+    youtube_recent = sum(1 for y in report.youtube if y.date and y.date >= report.range_from)
 
-    total_recent = reddit_recent + x_recent + web_recent
-    total_items = len(report.reddit) + len(report.x) + len(report.web)
+    total_recent = reddit_recent + x_recent + web_recent + dailydev_recent + youtube_recent
+    total_items = len(report.reddit) + len(report.x) + len(report.web) + len(report.dailydev) + len(report.youtube)
 
     return {
         "reddit_recent": reddit_recent,
         "x_recent": x_recent,
         "web_recent": web_recent,
+        "dailydev_recent": dailydev_recent,
+        "youtube_recent": youtube_recent,
         "total_recent": total_recent,
         "total_items": total_items,
         "is_sparse": total_recent < 5,
@@ -193,6 +197,80 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
                 lines.append(f"  *{item.why_relevant}*")
             lines.append("")
 
+    # DailyDev items
+    if report.dailydev_error:
+        lines.append("### Developer Articles (daily.dev)")
+        lines.append("")
+        lines.append(f"**ERROR:** {report.dailydev_error}")
+        lines.append("")
+    elif report.dailydev:
+        lines.append("### Developer Articles (daily.dev)")
+        lines.append("")
+        for item in report.dailydev[:limit]:
+            eng_str = ""
+            if item.engagement:
+                eng = item.engagement
+                parts = []
+                if eng.score is not None:
+                    parts.append(f"{eng.score}pts")
+                if eng.num_comments is not None:
+                    parts.append(f"{eng.num_comments}cmt")
+                if parts:
+                    eng_str = f" [{', '.join(parts)}]"
+
+            date_str = f" ({item.date})" if item.date else " (date unknown)"
+            conf_str = f" [date:{item.date_confidence}]" if item.date_confidence != "high" else ""
+            tags_str = f" [{', '.join(item.tags[:3])}]" if item.tags else ""
+
+            lines.append(f"**{item.id}** (score:{item.score}) {item.source_name}{date_str}{conf_str}{eng_str}")
+            lines.append(f"  {item.title}")
+            lines.append(f"  {item.url}")
+            if item.summary:
+                lines.append(f"  {item.summary[:150]}...")
+            if item.author_username:
+                lines.append(f"  by @{item.author_username}{tags_str}")
+            if item.why_relevant:
+                lines.append(f"  *{item.why_relevant}*")
+            lines.append("")
+
+    # YouTube items
+    if report.youtube_error:
+        lines.append("### YouTube Videos")
+        lines.append("")
+        lines.append(f"**ERROR:** {report.youtube_error}")
+        lines.append("")
+    elif report.youtube:
+        lines.append("### YouTube Videos")
+        lines.append("")
+        for item in report.youtube[:limit]:
+            eng_str = ""
+            if item.engagement:
+                eng = item.engagement
+                parts = []
+                if eng.views is not None:
+                    parts.append(f"{eng.views:,}views")
+                if eng.likes is not None:
+                    parts.append(f"{eng.likes:,}likes")
+                if eng.num_comments is not None:
+                    parts.append(f"{eng.num_comments:,}cmt")
+                if parts:
+                    eng_str = f" [{', '.join(parts)}]"
+
+            date_str = f" ({item.date})" if item.date else " (date unknown)"
+            conf_str = f" [date:{item.date_confidence}]" if item.date_confidence != "high" else ""
+            duration_str = ""
+            if item.duration:
+                mins = item.duration // 60
+                secs = item.duration % 60
+                duration_str = f" ({mins}:{secs:02d})"
+
+            lines.append(f"**{item.id}** (score:{item.score}) {item.channel_name}{date_str}{conf_str}{eng_str}{duration_str}")
+            lines.append(f"  {item.title}")
+            lines.append(f"  {item.url}")
+            if item.why_relevant:
+                lines.append(f"  *{item.why_relevant}*")
+            lines.append("")
+
     return "\n".join(lines)
 
 
@@ -222,6 +300,10 @@ def render_context_snippet(report: schema.Report) -> str:
         all_items.append((item.score, "X", item.text[:50] + "...", item.url))
     for item in report.web[:5]:
         all_items.append((item.score, "Web", item.title[:50] + "...", item.url))
+    for item in report.dailydev[:5]:
+        all_items.append((item.score, "DailyDev", item.title[:50] + "...", item.url))
+    for item in report.youtube[:5]:
+        all_items.append((item.score, "YouTube", item.title[:50] + "...", item.url))
 
     all_items.sort(key=lambda x: -x[0])
     for score, source, text, url in all_items[:7]:
@@ -328,6 +410,67 @@ def render_full_report(report: schema.Report) -> str:
             lines.append(f"> {item.snippet}")
             lines.append("")
 
+    # DailyDev section
+    if report.dailydev:
+        lines.append("## Developer Articles (daily.dev)")
+        lines.append("")
+        for item in report.dailydev:
+            lines.append(f"### {item.id}: {item.title}")
+            lines.append("")
+            lines.append(f"- **Source:** {item.source_name}")
+            lines.append(f"- **URL:** {item.url}")
+            lines.append(f"- **Author:** {item.author_name} (@{item.author_username})")
+            lines.append(f"- **Date:** {item.date or 'Unknown'} (confidence: {item.date_confidence})")
+            lines.append(f"- **Score:** {item.score}/100")
+            if item.tags:
+                lines.append(f"- **Tags:** {', '.join(item.tags)}")
+            if item.read_time:
+                lines.append(f"- **Read Time:** {item.read_time} min")
+            if item.why_relevant:
+                lines.append(f"- **Relevance:** {item.why_relevant}")
+
+            if item.engagement:
+                eng = item.engagement
+                lines.append(f"- **Engagement:** {eng.score or '?'} upvotes, {eng.num_comments or '?'} comments")
+
+            if item.summary:
+                lines.append("")
+                lines.append(f"> {item.summary}")
+
+            lines.append("")
+
+    # YouTube section
+    if report.youtube:
+        lines.append("## YouTube Videos")
+        lines.append("")
+        for item in report.youtube:
+            lines.append(f"### {item.id}: {item.title}")
+            lines.append("")
+            lines.append(f"- **Channel:** {item.channel_name}")
+            lines.append(f"- **URL:** {item.url}")
+            lines.append(f"- **Date:** {item.date or 'Unknown'} (confidence: {item.date_confidence})")
+            lines.append(f"- **Score:** {item.score}/100")
+            if item.duration:
+                mins = item.duration // 60
+                secs = item.duration % 60
+                lines.append(f"- **Duration:** {mins}:{secs:02d}")
+            if item.why_relevant:
+                lines.append(f"- **Relevance:** {item.why_relevant}")
+
+            if item.engagement:
+                eng = item.engagement
+                parts = []
+                if eng.views is not None:
+                    parts.append(f"{eng.views:,} views")
+                if eng.likes is not None:
+                    parts.append(f"{eng.likes:,} likes")
+                if eng.num_comments is not None:
+                    parts.append(f"{eng.num_comments:,} comments")
+                if parts:
+                    lines.append(f"- **Engagement:** {', '.join(parts)}")
+
+            lines.append("")
+
     # Placeholders for Claude synthesis
     lines.append("## Best Practices")
     lines.append("")
@@ -347,6 +490,8 @@ def write_outputs(
     raw_openai: Optional[dict] = None,
     raw_xai: Optional[dict] = None,
     raw_reddit_enriched: Optional[list] = None,
+    raw_dailydev: Optional[dict] = None,
+    raw_youtube: Optional[dict] = None,
 ):
     """Write all output files.
 
@@ -355,6 +500,8 @@ def write_outputs(
         raw_openai: Raw OpenAI API response
         raw_xai: Raw xAI API response
         raw_reddit_enriched: Raw enriched Reddit thread data
+        raw_dailydev: Raw daily.dev API response
+        raw_youtube: Raw TubeLab API response
     """
     ensure_output_dir()
 
@@ -382,6 +529,14 @@ def write_outputs(
     if raw_reddit_enriched:
         with open(OUTPUT_DIR / "raw_reddit_threads_enriched.json", 'w') as f:
             json.dump(raw_reddit_enriched, f, indent=2)
+
+    if raw_dailydev:
+        with open(OUTPUT_DIR / "raw_dailydev.json", 'w') as f:
+            json.dump(raw_dailydev, f, indent=2)
+
+    if raw_youtube:
+        with open(OUTPUT_DIR / "raw_youtube.json", 'w') as f:
+            json.dump(raw_youtube, f, indent=2)
 
 
 def get_context_path() -> str:

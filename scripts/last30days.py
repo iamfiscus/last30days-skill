@@ -27,6 +27,7 @@ SCRIPT_DIR = Path(__file__).parent.resolve()
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from lib import (
+    dailydev,
     dates,
     dedupe,
     env,
@@ -38,6 +39,7 @@ from lib import (
     render,
     schema,
     score,
+    tubelab_yt,
     twitterapi_x,
     ui,
     websearch,
@@ -157,6 +159,86 @@ def _search_x(
     return x_items, raw_xai, x_error
 
 
+def _search_dailydev(
+    topic: str,
+    config: dict,
+    from_date: str,
+    to_date: str,
+    depth: str,
+    mock: bool,
+) -> tuple:
+    """Search daily.dev for developer articles (runs in thread).
+
+    Returns:
+        Tuple of (dailydev_items, raw_dailydev, error)
+    """
+    raw_dailydev = None
+    dailydev_error = None
+
+    if mock:
+        raw_dailydev = load_fixture("dailydev_sample.json")
+    else:
+        try:
+            raw_dailydev = dailydev.search_dailydev(
+                config["DAILYDEV_API_KEY"],
+                topic,
+                from_date,
+                to_date,
+                depth=depth,
+            )
+        except http.HTTPError as e:
+            raw_dailydev = {"error": str(e)}
+            dailydev_error = f"API error: {e}"
+        except Exception as e:
+            raw_dailydev = {"error": str(e)}
+            dailydev_error = f"{type(e).__name__}: {e}"
+
+    # Parse response
+    dailydev_items = dailydev.parse_dailydev_response(raw_dailydev or {})
+
+    return dailydev_items, raw_dailydev, dailydev_error
+
+
+def _search_youtube(
+    topic: str,
+    config: dict,
+    from_date: str,
+    to_date: str,
+    depth: str,
+    mock: bool,
+) -> tuple:
+    """Search YouTube via TubeLab (runs in thread).
+
+    Returns:
+        Tuple of (youtube_items, raw_youtube, error)
+    """
+    raw_youtube = None
+    youtube_error = None
+
+    if mock:
+        raw_youtube = load_fixture("tubelab_sample.json")
+    else:
+        try:
+            raw_youtube = tubelab_yt.search_youtube(
+                config["TUBELAB_API_KEY"],
+                topic,
+                from_date,
+                to_date,
+                depth=depth,
+            )
+        except http.HTTPError as e:
+            raw_youtube = {"error": str(e)}
+            youtube_error = f"API error: {e}"
+        except Exception as e:
+            raw_youtube = {"error": str(e)}
+            youtube_error = f"{type(e).__name__}: {e}"
+
+    # Parse response
+    youtube_items = tubelab_yt.parse_youtube_response(raw_youtube or {})
+
+    return youtube_items, raw_youtube, youtube_error
+
+
 def run_research(
     topic: str,
     sources: str,
@@ -167,22 +249,33 @@ def run_research(
     depth: str = "default",
     mock: bool = False,
     progress: ui.ProgressDisplay = None,
+    run_dailydev: bool = False,
+    run_youtube: bool = False,
 ) -> tuple:
     """Run the research pipeline.
 
     Returns:
-        Tuple of (reddit_items, x_items, web_needed, raw_openai, raw_xai, raw_reddit_enriched, reddit_error, x_error)
+        Tuple of (reddit_items, x_items, web_needed, raw_openai, raw_xai,
+                  raw_reddit_enriched, reddit_error, x_error,
+                  dailydev_items, raw_dailydev, dailydev_error,
+                  youtube_items, raw_youtube, youtube_error)
 
     Note: web_needed is True when WebSearch should be performed by Claude.
     The script outputs a marker and Claude handles WebSearch in its session.
     """
     reddit_items = []
     x_items = []
+    dailydev_items = []
+    youtube_items = []
     raw_openai = None
     raw_xai = None
+    raw_dailydev = None
+    raw_youtube = None
     raw_reddit_enriched = []
     reddit_error = None
     x_error = None
+    dailydev_error = None
+    youtube_error = None
 
     # Check if WebSearch is needed (always needed in web-only mode)
     web_needed = sources in ("all", "web", "reddit-web", "x-web")
@@ -192,19 +285,27 @@ def run_research(
         if progress:
             progress.start_web_only()
             progress.end_web_only()
-        return reddit_items, x_items, True, raw_openai, raw_xai, raw_reddit_enriched, reddit_error, x_error
+        return (reddit_items, x_items, True, raw_openai, raw_xai, raw_reddit_enriched,
+                reddit_error, x_error, dailydev_items, raw_dailydev, dailydev_error,
+                youtube_items, raw_youtube, youtube_error)
 
     # Determine which searches to run
-    run_reddit = sources in ("both", "reddit", "all", "reddit-web")
-    run_x = sources in ("both", "x", "all", "x-web")
+    run_reddit_src = sources in ("both", "reddit", "all", "reddit-web")
+    run_x_src = sources in ("both", "x", "all", "x-web")
 
-    # Run Reddit and X searches in parallel
+    # Count workers needed
+    worker_count = sum([run_reddit_src, run_x_src, run_dailydev, run_youtube])
+    worker_count = max(worker_count, 1)
+
+    # Run searches in parallel
     reddit_future = None
     x_future = None
+    dailydev_future = None
+    youtube_future = None
 
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        # Submit both searches
-        if run_reddit:
+    with ThreadPoolExecutor(max_workers=worker_count) as executor:
+        # Submit searches
+        if run_reddit_src:
             if progress:
                 progress.start_reddit()
             reddit_future = executor.submit(
@@ -212,11 +313,27 @@ def run_research(
                 from_date, to_date, depth, mock
             )
 
-        if run_x:
+        if run_x_src:
             if progress:
                 progress.start_x()
             x_future = executor.submit(
                 _search_x, topic, config, selected_models,
+                from_date, to_date, depth, mock
+            )
+
+        if run_dailydev:
+            if progress:
+                progress.start_dailydev()
+            dailydev_future = executor.submit(
+                _search_dailydev, topic, config,
+                from_date, to_date, depth, mock
+            )
+
+        if run_youtube:
+            if progress:
+                progress.start_youtube()
+            youtube_future = executor.submit(
+                _search_youtube, topic, config,
                 from_date, to_date, depth, mock
             )
 
@@ -245,6 +362,30 @@ def run_research(
             if progress:
                 progress.end_x(len(x_items))
 
+        if dailydev_future:
+            try:
+                dailydev_items, raw_dailydev, dailydev_error = dailydev_future.result()
+                if dailydev_error and progress:
+                    progress.show_error(f"DailyDev error: {dailydev_error}")
+            except Exception as e:
+                dailydev_error = f"{type(e).__name__}: {e}"
+                if progress:
+                    progress.show_error(f"DailyDev error: {e}")
+            if progress:
+                progress.end_dailydev(len(dailydev_items))
+
+        if youtube_future:
+            try:
+                youtube_items, raw_youtube, youtube_error = youtube_future.result()
+                if youtube_error and progress:
+                    progress.show_error(f"YouTube error: {youtube_error}")
+            except Exception as e:
+                youtube_error = f"{type(e).__name__}: {e}"
+                if progress:
+                    progress.show_error(f"YouTube error: {e}")
+            if progress:
+                progress.end_youtube(len(youtube_items))
+
     # Enrich Reddit items with real data (sequential, but with error handling per-item)
     if reddit_items:
         if progress:
@@ -270,7 +411,9 @@ def run_research(
         if progress:
             progress.end_reddit_enrich()
 
-    return reddit_items, x_items, web_needed, raw_openai, raw_xai, raw_reddit_enriched, reddit_error, x_error
+    return (reddit_items, x_items, web_needed, raw_openai, raw_xai, raw_reddit_enriched,
+            reddit_error, x_error, dailydev_items, raw_dailydev, dailydev_error,
+            youtube_items, raw_youtube, youtube_error)
 
 
 def main():
@@ -310,6 +453,16 @@ def main():
         "--include-web",
         action="store_true",
         help="Include general web search alongside Reddit/X (lower weighted)",
+    )
+    parser.add_argument(
+        "--dailydev",
+        action="store_true",
+        help="Include daily.dev developer articles",
+    )
+    parser.add_argument(
+        "--youtube",
+        action="store_true",
+        help="Include YouTube videos via TubeLab (5 credits/search)",
     )
 
     args = parser.parse_args()
@@ -412,8 +565,23 @@ def main():
     else:
         mode = sources
 
+    # Determine if DailyDev should run
+    # Auto-enable when key present + not web-only mode, or explicit --dailydev flag
+    should_run_dailydev = (
+        args.dailydev
+        or (bool(config.get('DAILYDEV_API_KEY')) and sources != "web")
+        or args.mock
+    )
+
+    # YouTube is explicit opt-in only (expensive: 5 credits/search)
+    should_run_youtube = (
+        args.youtube and (bool(config.get('TUBELAB_API_KEY')) or args.mock)
+    )
+
     # Run research
-    reddit_items, x_items, web_needed, raw_openai, raw_xai, raw_reddit_enriched, reddit_error, x_error = run_research(
+    (reddit_items, x_items, web_needed, raw_openai, raw_xai, raw_reddit_enriched,
+     reddit_error, x_error, dailydev_items, raw_dailydev, dailydev_error,
+     youtube_items, raw_youtube, youtube_error) = run_research(
         args.topic,
         sources,
         config,
@@ -423,6 +591,8 @@ def main():
         depth,
         args.mock,
         progress,
+        run_dailydev=should_run_dailydev,
+        run_youtube=should_run_youtube,
     )
 
     # Processing phase
@@ -431,23 +601,33 @@ def main():
     # Normalize items
     normalized_reddit = normalize.normalize_reddit_items(reddit_items, from_date, to_date)
     normalized_x = normalize.normalize_x_items(x_items, from_date, to_date)
+    normalized_dailydev = normalize.normalize_dailydev_items(dailydev_items, from_date, to_date)
+    normalized_youtube = normalize.normalize_youtube_items(youtube_items, from_date, to_date)
 
     # Hard date filter: exclude items with verified dates outside the range
     # This is the safety net - even if prompts let old content through, this filters it
     filtered_reddit = normalize.filter_by_date_range(normalized_reddit, from_date, to_date)
     filtered_x = normalize.filter_by_date_range(normalized_x, from_date, to_date)
+    filtered_dailydev = normalize.filter_by_date_range(normalized_dailydev, from_date, to_date)
+    filtered_youtube = normalize.filter_by_date_range(normalized_youtube, from_date, to_date)
 
     # Score items
     scored_reddit = score.score_reddit_items(filtered_reddit)
     scored_x = score.score_x_items(filtered_x)
+    scored_dailydev = score.score_dailydev_items(filtered_dailydev)
+    scored_youtube = score.score_youtube_items(filtered_youtube)
 
     # Sort items
     sorted_reddit = score.sort_items(scored_reddit)
     sorted_x = score.sort_items(scored_x)
+    sorted_dailydev = score.sort_items(scored_dailydev)
+    sorted_youtube = score.sort_items(scored_youtube)
 
     # Dedupe items
     deduped_reddit = dedupe.dedupe_reddit(sorted_reddit)
     deduped_x = dedupe.dedupe_x(sorted_x)
+    deduped_dailydev = dedupe.dedupe_dailydev(sorted_dailydev)
+    deduped_youtube = dedupe.dedupe_youtube(sorted_youtube)
 
     progress.end_processing()
 
@@ -462,20 +642,24 @@ def main():
     )
     report.reddit = deduped_reddit
     report.x = deduped_x
+    report.dailydev = deduped_dailydev
+    report.youtube = deduped_youtube
     report.reddit_error = reddit_error
     report.x_error = x_error
+    report.dailydev_error = dailydev_error
+    report.youtube_error = youtube_error
 
     # Generate context snippet
     report.context_snippet_md = render.render_context_snippet(report)
 
     # Write outputs
-    render.write_outputs(report, raw_openai, raw_xai, raw_reddit_enriched)
+    render.write_outputs(report, raw_openai, raw_xai, raw_reddit_enriched, raw_dailydev, raw_youtube)
 
     # Show completion
     if sources == "web":
         progress.show_web_only_complete()
     else:
-        progress.show_complete(len(deduped_reddit), len(deduped_x))
+        progress.show_complete(len(deduped_reddit), len(deduped_x), len(deduped_dailydev), len(deduped_youtube))
 
     # Output result
     output_result(report, args.emit, web_needed, args.topic, from_date, to_date, missing_keys)

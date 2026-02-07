@@ -36,16 +36,20 @@ def jaccard_similarity(set1: Set[str], set2: Set[str]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def get_item_text(item: Union[schema.RedditItem, schema.XItem]) -> str:
+def get_item_text(item: Union[schema.RedditItem, schema.XItem, schema.DailyDevItem, schema.YouTubeItem]) -> str:
     """Get comparable text from an item."""
     if isinstance(item, schema.RedditItem):
+        return item.title
+    elif isinstance(item, schema.DailyDevItem):
+        return item.title
+    elif isinstance(item, schema.YouTubeItem):
         return item.title
     else:
         return item.text
 
 
 def find_duplicates(
-    items: List[Union[schema.RedditItem, schema.XItem]],
+    items: List[Union[schema.RedditItem, schema.XItem, schema.DailyDevItem, schema.YouTubeItem]],
     threshold: float = 0.7,
 ) -> List[Tuple[int, int]]:
     """Find near-duplicate pairs in items.
@@ -72,9 +76,9 @@ def find_duplicates(
 
 
 def dedupe_items(
-    items: List[Union[schema.RedditItem, schema.XItem]],
+    items: List[Union[schema.RedditItem, schema.XItem, schema.DailyDevItem, schema.YouTubeItem]],
     threshold: float = 0.7,
-) -> List[Union[schema.RedditItem, schema.XItem]]:
+) -> List[Union[schema.RedditItem, schema.XItem, schema.DailyDevItem, schema.YouTubeItem]]:
     """Remove near-duplicates, keeping highest-scored item.
 
     Args:
@@ -117,4 +121,20 @@ def dedupe_x(
     threshold: float = 0.7,
 ) -> List[schema.XItem]:
     """Dedupe X items."""
+    return dedupe_items(items, threshold)
+
+
+def dedupe_dailydev(
+    items: List[schema.DailyDevItem],
+    threshold: float = 0.7,
+) -> List[schema.DailyDevItem]:
+    """Dedupe DailyDev items."""
+    return dedupe_items(items, threshold)
+
+
+def dedupe_youtube(
+    items: List[schema.YouTubeItem],
+    threshold: float = 0.7,
+) -> List[schema.YouTubeItem]:
+    """Dedupe YouTube items."""
     return dedupe_items(items, threshold)
