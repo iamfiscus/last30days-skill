@@ -90,7 +90,7 @@ PROMO_MESSAGE = f"""
      └─ Add OPENAI_API_KEY (uses OpenAI's web_search for Reddit)
 
   {Colors.CYAN}🔵 X (Twitter){Colors.RESET} - Real-time posts, likes, reposts from creators
-     └─ Add XAI_API_KEY (uses xAI's live X search)
+     └─ Add TWITTERAPI_IO_KEY (uses twitterapi.io)
 
 {Colors.DIM}Setup:{Colors.RESET} Edit {Colors.BOLD}~/.config/last30days/.env{Colors.RESET}
 {Colors.YELLOW}{Colors.BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.RESET}
@@ -106,7 +106,7 @@ Right now you're using web search only. Add API keys to unlock:
      └─ Add OPENAI_API_KEY (uses OpenAI's web_search for Reddit)
 
   🔵 X (Twitter) - Real-time posts, likes, reposts from creators
-     └─ Add XAI_API_KEY (uses xAI's live X search)
+     └─ Add TWITTERAPI_IO_KEY (uses twitterapi.io)
 
 Setup: Edit ~/.config/last30days/.env
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -118,13 +118,13 @@ PROMO_SINGLE_KEY = {
 {Colors.DIM}💡 Tip: Add {Colors.YELLOW}OPENAI_API_KEY{Colors.RESET}{Colors.DIM} to ~/.config/last30days/.env for Reddit data with real engagement metrics!{Colors.RESET}
 """,
     "x": f"""
-{Colors.DIM}💡 Tip: Add {Colors.CYAN}XAI_API_KEY{Colors.RESET}{Colors.DIM} to ~/.config/last30days/.env for X/Twitter data with real likes & reposts!{Colors.RESET}
+{Colors.DIM}💡 Tip: Add {Colors.CYAN}TWITTERAPI_IO_KEY{Colors.RESET}{Colors.DIM} to ~/.config/last30days/.env for X/Twitter data with real likes & reposts!{Colors.RESET}
 """,
 }
 
 PROMO_SINGLE_KEY_PLAIN = {
     "reddit": "\n💡 Tip: Add OPENAI_API_KEY to ~/.config/last30days/.env for Reddit data with real engagement metrics!\n",
-    "x": "\n💡 Tip: Add XAI_API_KEY to ~/.config/last30days/.env for X/Twitter data with real likes & reposts!\n",
+    "x": "\n💡 Tip: Add TWITTERAPI_IO_KEY to ~/.config/last30days/.env for X/Twitter data with real likes & reposts!\n",
 }
 
 # Spinner frames

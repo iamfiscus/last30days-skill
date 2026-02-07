@@ -38,9 +38,9 @@ from lib import (
     render,
     schema,
     score,
+    twitterapi_x,
     ui,
     websearch,
-    xai_x,
 )
 
 
@@ -125,7 +125,7 @@ def _search_x(
     depth: str,
     mock: bool,
 ) -> tuple:
-    """Search X via xAI (runs in thread).
+    """Search X via twitterapi.io (runs in thread).
 
     Returns:
         Tuple of (x_items, raw_xai, error)
@@ -134,12 +134,11 @@ def _search_x(
     x_error = None
 
     if mock:
-        raw_xai = load_fixture("xai_sample.json")
+        raw_xai = load_fixture("twitterapi_sample.json")
     else:
         try:
-            raw_xai = xai_x.search_x(
-                config["XAI_API_KEY"],
-                selected_models["xai"],
+            raw_xai = twitterapi_x.search_x(
+                config["TWITTERAPI_IO_KEY"],
                 topic,
                 from_date,
                 to_date,
@@ -153,7 +152,7 @@ def _search_x(
             x_error = f"{type(e).__name__}: {e}"
 
     # Parse response
-    x_items = xai_x.parse_x_response(raw_xai or {})
+    x_items = twitterapi_x.parse_x_response(raw_xai or {})
 
     return x_items, raw_xai, x_error
 
@@ -374,19 +373,23 @@ def main():
     if missing_keys != 'none':
         progress.show_promo(missing_keys)
 
+    # Show migration notice if user has old XAI_API_KEY
+    if config.get('_HAS_OLD_XAI_KEY'):
+        sys.stderr.write(
+            "\n💡 Migration: Rename XAI_API_KEY to TWITTERAPI_IO_KEY in ~/.config/last30days/.env\n"
+            "   (XAI_API_KEY still works but will be removed in a future version)\n\n"
+        )
+
     # Select models
     if args.mock:
         # Use mock models
         mock_openai_models = load_fixture("models_openai_sample.json").get("data", [])
-        mock_xai_models = load_fixture("models_xai_sample.json").get("data", [])
         selected_models = models.get_models(
             {
                 "OPENAI_API_KEY": "mock",
-                "XAI_API_KEY": "mock",
                 **config,
             },
             mock_openai_models,
-            mock_xai_models,
         )
     else:
         selected_models = models.get_models(config)

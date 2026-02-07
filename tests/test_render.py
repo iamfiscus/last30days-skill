@@ -65,9 +65,9 @@ class TestRenderCompact(unittest.TestCase):
             mode="reddit-only",
         )
 
-        result = render.render_compact(report)
+        result = render.render_compact(report, missing_keys="x")
 
-        self.assertIn("xAI key", result)
+        self.assertIn("TWITTERAPI_IO_KEY", result)
 
 
 class TestRenderContextSnippet(unittest.TestCase):

@@ -1,0 +1,70 @@
+{
+  "tweets": [
+    {
+      "id": "1880123456789012345",
+      "text": "Just shipped my first Claude Code skill! The SKILL.md format is incredibly intuitive. Pro tip: use context: fork for resource-intensive operations.",
+      "createdAt": "Wed Jan 15 14:30:00 +0000 2026",
+      "author": {
+        "userName": "devuser1",
+        "name": "Dev User One",
+        "profilePicture": "https://pbs.twimg.com/profile_images/example1.jpg"
+      },
+      "url": "https://x.com/devuser1/status/1880123456789012345",
+      "likeCount": 542,
+      "retweetCount": 87,
+      "replyCount": 34,
+      "quoteCount": 12,
+      "viewCount": 15200
+    },
+    {
+      "id": "1879987654321098765",
+      "text": "Thread: Everything I learned building 10 Claude Code skills in 30 days. 1/ Start simple. Your first skill should be < 50 lines of markdown.",
+      "createdAt": "Sun Jan 12 10:00:00 +0000 2026",
+      "author": {
+        "userName": "aibuilder",
+        "name": "AI Builder",
+        "profilePicture": "https://pbs.twimg.com/profile_images/example2.jpg"
+      },
+      "url": "https://x.com/aibuilder/status/1879987654321098765",
+      "likeCount": 1203,
+      "retweetCount": 245,
+      "replyCount": 89,
+      "quoteCount": 56,
+      "viewCount": 48000
+    },
+    {
+      "id": "1878111222333444555",
+      "text": "The allowed-tools field in SKILL.md is crucial for security. Don't give skills more permissions than they need.",
+      "createdAt": "Wed Jan 08 18:45:00 +0000 2026",
+      "author": {
+        "userName": "securitydev",
+        "name": "Security Dev",
+        "profilePicture": "https://pbs.twimg.com/profile_images/example3.jpg"
+      },
+      "url": "https://x.com/securitydev/status/1878111222333444555",
+      "likeCount": 328,
+      "retweetCount": 67,
+      "replyCount": 23,
+      "quoteCount": 8,
+      "viewCount": 9800
+    },
+    {
+      "id": "1877555666777888999",
+      "text": "Loving the new /skill command in Claude Code. Makes testing skills so much easier during development.",
+      "createdAt": "2026-01-05T09:15:00Z",
+      "author": {
+        "userName": "codeenthusiast",
+        "name": "Code Enthusiast",
+        "profilePicture": "https://pbs.twimg.com/profile_images/example4.jpg"
+      },
+      "url": "https://x.com/codeenthusiast/status/1877555666777888999",
+      "likeCount": 156,
+      "retweetCount": 23,
+      "replyCount": 12,
+      "quoteCount": 4,
+      "viewCount": 4200
+    }
+  ],
+  "has_next_page": false,
+  "next_cursor": null
+}

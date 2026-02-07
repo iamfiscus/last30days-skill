@@ -66,7 +66,7 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
         lines.append("---")
         lines.append("**⚡ Want better results?** Add API keys to unlock Reddit & X data:")
         lines.append("- `OPENAI_API_KEY` → Reddit threads with real upvotes & comments")
-        lines.append("- `XAI_API_KEY` → X posts with real likes & reposts")
+        lines.append("- `TWITTERAPI_IO_KEY` → X posts with real likes & reposts")
         lines.append("- Edit `~/.config/last30days/.env` to add keys")
         lines.append("---")
         lines.append("")
@@ -87,7 +87,7 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
 
     # Coverage note for partial coverage
     if report.mode == "reddit-only" and missing_keys == "x":
-        lines.append("*💡 Tip: Add XAI_API_KEY for X/Twitter data and better triangulation.*")
+        lines.append("*💡 Tip: Add TWITTERAPI_IO_KEY for X/Twitter data and better triangulation.*")
         lines.append("")
     elif report.mode == "x-only" and missing_keys == "reddit":
         lines.append("*💡 Tip: Add OPENAI_API_KEY for Reddit data and better triangulation.*")
@@ -125,7 +125,8 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
             lines.append(f"**{item.id}** (score:{item.score}) r/{item.subreddit}{date_str}{conf_str}{eng_str}")
             lines.append(f"  {item.title}")
             lines.append(f"  {item.url}")
-            lines.append(f"  *{item.why_relevant}*")
+            if item.why_relevant:
+                lines.append(f"  *{item.why_relevant}*")
 
             # Top comment insights
             if item.comment_insights:
@@ -167,7 +168,8 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
             lines.append(f"**{item.id}** (score:{item.score}) @{item.author_handle}{date_str}{conf_str}{eng_str}")
             lines.append(f"  {item.text[:200]}...")
             lines.append(f"  {item.url}")
-            lines.append(f"  *{item.why_relevant}*")
+            if item.why_relevant:
+                lines.append(f"  *{item.why_relevant}*")
             lines.append("")
 
     # Web items (if any - populated by Claude)
@@ -187,7 +189,8 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
             lines.append(f"  {item.title}")
             lines.append(f"  {item.url}")
             lines.append(f"  {item.snippet[:150]}...")
-            lines.append(f"  *{item.why_relevant}*")
+            if item.why_relevant:
+                lines.append(f"  *{item.why_relevant}*")
             lines.append("")
 
     return "\n".join(lines)
@@ -272,7 +275,8 @@ def render_full_report(report: schema.Report) -> str:
             lines.append(f"- **URL:** {item.url}")
             lines.append(f"- **Date:** {item.date or 'Unknown'} (confidence: {item.date_confidence})")
             lines.append(f"- **Score:** {item.score}/100")
-            lines.append(f"- **Relevance:** {item.why_relevant}")
+            if item.why_relevant:
+                lines.append(f"- **Relevance:** {item.why_relevant}")
 
             if item.engagement:
                 eng = item.engagement
@@ -296,7 +300,8 @@ def render_full_report(report: schema.Report) -> str:
             lines.append(f"- **URL:** {item.url}")
             lines.append(f"- **Date:** {item.date or 'Unknown'} (confidence: {item.date_confidence})")
             lines.append(f"- **Score:** {item.score}/100")
-            lines.append(f"- **Relevance:** {item.why_relevant}")
+            if item.why_relevant:
+                lines.append(f"- **Relevance:** {item.why_relevant}")
 
             if item.engagement:
                 eng = item.engagement
@@ -317,7 +322,8 @@ def render_full_report(report: schema.Report) -> str:
             lines.append(f"- **URL:** {item.url}")
             lines.append(f"- **Date:** {item.date or 'Unknown'} (confidence: {item.date_confidence})")
             lines.append(f"- **Score:** {item.score}/100")
-            lines.append(f"- **Relevance:** {item.why_relevant}")
+            if item.why_relevant:
+                lines.append(f"- **Relevance:** {item.why_relevant}")
             lines.append("")
             lines.append(f"> {item.snippet}")
             lines.append("")

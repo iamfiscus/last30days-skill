@@ -78,33 +78,6 @@ class TestSelectOpenAIModel(unittest.TestCase):
         self.assertEqual(result, "gpt-5.2")
 
 
-class TestSelectXAIModel(unittest.TestCase):
-    def test_latest_policy(self):
-        result = models.select_xai_model(
-            "fake-key",
-            policy="latest"
-        )
-        self.assertEqual(result, "grok-4-latest")
-
-    def test_stable_policy(self):
-        # Clear cache first to avoid interference
-        from lib import cache
-        cache.MODEL_CACHE_FILE.unlink(missing_ok=True)
-        result = models.select_xai_model(
-            "fake-key",
-            policy="stable"
-        )
-        self.assertEqual(result, "grok-4")
-
-    def test_pinned_policy(self):
-        result = models.select_xai_model(
-            "fake-key",
-            policy="pinned",
-            pin="grok-3"
-        )
-        self.assertEqual(result, "grok-3")
-
-
 class TestGetModels(unittest.TestCase):
     def test_no_keys_returns_none(self):
         config = {}
@@ -119,16 +92,16 @@ class TestGetModels(unittest.TestCase):
         self.assertEqual(result["openai"], "gpt-5.2")
         self.assertIsNone(result["xai"])
 
-    def test_both_keys(self):
+    def test_xai_key_always_none(self):
+        """xAI model selection removed — twitterapi.io needs no LLM."""
         config = {
             "OPENAI_API_KEY": "sk-test",
             "XAI_API_KEY": "xai-test",
         }
         mock_openai = [{"id": "gpt-5.2", "created": 1704067200}]
-        mock_xai = [{"id": "grok-4-latest", "created": 1704067200}]
-        result = models.get_models(config, mock_openai, mock_xai)
+        result = models.get_models(config, mock_openai)
         self.assertEqual(result["openai"], "gpt-5.2")
-        self.assertEqual(result["xai"], "grok-4-latest")
+        self.assertIsNone(result["xai"])
 
 
 if __name__ == "__main__":

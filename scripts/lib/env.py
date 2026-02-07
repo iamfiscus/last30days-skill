@@ -36,14 +36,30 @@ def get_config() -> Dict[str, Any]:
     # Load from config file first
     file_env = load_env_file(CONFIG_FILE)
 
+    # Resolve twitterapi.io key (new name) with XAI_API_KEY fallback
+    twitterapi_key = (
+        os.environ.get('TWITTERAPI_IO_KEY')
+        or file_env.get('TWITTERAPI_IO_KEY')
+        or os.environ.get('XAI_API_KEY')
+        or file_env.get('XAI_API_KEY')
+    )
+
+    # Detect migration scenario: user has old key name but not new one
+    has_old_xai_key = bool(
+        os.environ.get('XAI_API_KEY') or file_env.get('XAI_API_KEY')
+    )
+    has_new_key = bool(
+        os.environ.get('TWITTERAPI_IO_KEY') or file_env.get('TWITTERAPI_IO_KEY')
+    )
+
     # Environment variables override file
     config = {
         'OPENAI_API_KEY': os.environ.get('OPENAI_API_KEY') or file_env.get('OPENAI_API_KEY'),
-        'XAI_API_KEY': os.environ.get('XAI_API_KEY') or file_env.get('XAI_API_KEY'),
+        'TWITTERAPI_IO_KEY': twitterapi_key,
+        'XAI_API_KEY': twitterapi_key,  # Alias for get_available_sources() compat
         'OPENAI_MODEL_POLICY': os.environ.get('OPENAI_MODEL_POLICY') or file_env.get('OPENAI_MODEL_POLICY', 'auto'),
         'OPENAI_MODEL_PIN': os.environ.get('OPENAI_MODEL_PIN') or file_env.get('OPENAI_MODEL_PIN'),
-        'XAI_MODEL_POLICY': os.environ.get('XAI_MODEL_POLICY') or file_env.get('XAI_MODEL_POLICY', 'latest'),
-        'XAI_MODEL_PIN': os.environ.get('XAI_MODEL_PIN') or file_env.get('XAI_MODEL_PIN'),
+        '_HAS_OLD_XAI_KEY': has_old_xai_key and not has_new_key,
     }
 
     return config

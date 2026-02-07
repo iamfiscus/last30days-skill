@@ -9,13 +9,6 @@ from . import cache, http
 OPENAI_MODELS_URL = "https://api.openai.com/v1/models"
 OPENAI_FALLBACK_MODELS = ["gpt-5.2", "gpt-5.1", "gpt-5", "gpt-4o"]
 
-# xAI API - Agent Tools API requires grok-4 family
-XAI_MODELS_URL = "https://api.x.ai/v1/models"
-XAI_ALIASES = {
-    "latest": "grok-4-1-fast",  # Required for x_search tool
-    "stable": "grok-4-1-fast",
-}
-
 
 def parse_version(model_id: str) -> Optional[Tuple[int, ...]]:
     """Parse semantic version from model ID.
@@ -107,52 +100,14 @@ def select_openai_model(
     return selected
 
 
-def select_xai_model(
-    api_key: str,
-    policy: str = "latest",
-    pin: Optional[str] = None,
-    mock_models: Optional[List[Dict]] = None,
-) -> str:
-    """Select the best xAI model based on policy.
-
-    Args:
-        api_key: xAI API key
-        policy: 'latest', 'stable', or 'pinned'
-        pin: Model to use if policy is 'pinned'
-        mock_models: Mock model list for testing
-
-    Returns:
-        Selected model ID
-    """
-    if policy == "pinned" and pin:
-        return pin
-
-    # Use alias system
-    if policy in XAI_ALIASES:
-        alias = XAI_ALIASES[policy]
-
-        # Check cache first
-        cached = cache.get_cached_model("xai")
-        if cached:
-            return cached
-
-        # Cache the alias
-        cache.set_cached_model("xai", alias)
-        return alias
-
-    # Default to latest
-    return XAI_ALIASES["latest"]
-
-
 def get_models(
     config: Dict,
     mock_openai_models: Optional[List[Dict]] = None,
-    mock_xai_models: Optional[List[Dict]] = None,
 ) -> Dict[str, Optional[str]]:
-    """Get selected models for both providers.
+    """Get selected models for providers.
 
     Returns:
-        Dict with 'openai' and 'xai' keys
+        Dict with 'openai' and 'xai' keys (xai is always None — no LLM needed)
     """
     result = {"openai": None, "xai": None}
 
@@ -162,14 +117,6 @@ def get_models(
             config.get("OPENAI_MODEL_POLICY", "auto"),
             config.get("OPENAI_MODEL_PIN"),
             mock_openai_models,
-        )
-
-    if config.get("XAI_API_KEY"):
-        result["xai"] = select_xai_model(
-            config["XAI_API_KEY"],
-            config.get("XAI_MODEL_POLICY", "latest"),
-            config.get("XAI_MODEL_PIN"),
-            mock_xai_models,
         )
 
     return result
