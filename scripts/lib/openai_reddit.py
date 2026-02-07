@@ -95,11 +95,13 @@ Return JSON:
 
 def _extract_core_subject(topic: str) -> str:
     """Extract core subject from verbose query for retry."""
-    noise = ['best', 'top', 'how to', 'tips for', 'practices', 'features',
+    noise = ['best', 'top', 'how', 'to', 'tips', 'for', 'practices', 'features',
              'killer', 'guide', 'tutorial', 'recommendations', 'advice',
-             'prompting', 'using', 'for', 'with', 'the', 'of', 'in', 'on']
+             'prompting', 'using', 'with', 'the', 'of', 'in', 'on', 'and',
+             'hour', 'day', 'setup', 'workflow', 'most', 'popular', 'what',
+             'are', 'is', 'my', 'your', 'a', 'an']
     words = topic.lower().split()
-    result = [w for w in words if w not in noise]
+    result = [w for w in words if w not in noise and not w.isdigit()]
     return ' '.join(result[:3]) or topic  # Keep max 3 words
 
 

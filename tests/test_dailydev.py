@@ -78,7 +78,7 @@ class TestParseDailyDevResponse(unittest.TestCase):
 
     def test_skips_items_without_title(self):
         response = {
-            "posts": [
+            "data": [
                 {"id": "1", "title": "", "url": "https://example.com"},
                 {"id": "2", "title": "Valid Title", "url": "https://example.com"},
             ]
@@ -87,33 +87,45 @@ class TestParseDailyDevResponse(unittest.TestCase):
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0]["title"], "Valid Title")
 
+    def test_legacy_posts_key(self):
+        """Ensure old fixture format with 'posts' key still works."""
+        response = {
+            "posts": [
+                {"id": "1", "title": "Legacy Format", "url": "https://example.com",
+                 "upvotes": 10, "comments": 2},
+            ]
+        }
+        items = dailydev.parse_dailydev_response(response)
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["engagement"]["score"], 10)
+
 
 class TestComputeRelevance(unittest.TestCase):
     def test_first_position_high_relevance(self):
-        post = {"upvotes": 100, "comments": 20, "readTime": 10}
+        post = {"numUpvotes": 100, "numComments": 20, "readTime": 10}
         result = dailydev._compute_relevance(0, 10, post)
         self.assertGreater(result, 0.5)
 
     def test_last_position_lower_relevance(self):
-        post = {"upvotes": 5, "comments": 1, "readTime": 3}
+        post = {"numUpvotes": 5, "numComments": 1, "readTime": 3}
         result = dailydev._compute_relevance(9, 10, post)
         self.assertGreater(result, 0)
         self.assertLess(result, 0.5)
 
     def test_single_item(self):
-        post = {"upvotes": 50, "comments": 10, "readTime": 5}
+        post = {"numUpvotes": 50, "numComments": 10, "readTime": 5}
         result = dailydev._compute_relevance(0, 1, post)
         self.assertGreater(result, 0.5)
 
     def test_high_engagement_boosts_score(self):
-        low_eng = {"upvotes": 1, "comments": 0, "readTime": 1}
-        high_eng = {"upvotes": 500, "comments": 100, "readTime": 15}
+        low_eng = {"numUpvotes": 1, "numComments": 0, "readTime": 1}
+        high_eng = {"numUpvotes": 500, "numComments": 100, "readTime": 15}
         low_result = dailydev._compute_relevance(5, 10, low_eng)
         high_result = dailydev._compute_relevance(5, 10, high_eng)
         self.assertGreater(high_result, low_result)
 
     def test_result_bounded(self):
-        post = {"upvotes": 10000, "comments": 5000, "readTime": 30}
+        post = {"numUpvotes": 10000, "numComments": 5000, "readTime": 30}
         result = dailydev._compute_relevance(0, 1, post)
         self.assertLessEqual(result, 1.0)
         self.assertGreaterEqual(result, 0.0)

@@ -49,7 +49,9 @@ def search_dailydev(
         "Authorization": f"Bearer {api_key}",
     }
 
-    url = f"{DAILYDEV_SEARCH_URL}?q={quote(topic)}&time=month&limit={limit}"
+    # Note: 'time' parameter causes HTTP 500 on daily.dev API, so we omit it
+    # and rely on downstream date filtering instead
+    url = f"{DAILYDEV_SEARCH_URL}?q={quote(topic)}&limit={limit}"
 
     return http.get(url, headers=headers, timeout=30)
 
@@ -74,9 +76,9 @@ def _compute_relevance(position: int, total: int, post: dict) -> float:
     else:
         pos_score = max(0.1, 1.0 - (position / (total - 1)) * 0.9)
 
-    # Engagement score
-    upvotes = post.get("upvotes", 0) or 0
-    comments = post.get("comments", 0) or 0
+    # Engagement score (API uses numUpvotes/numComments)
+    upvotes = post.get("numUpvotes", 0) or post.get("upvotes", 0) or 0
+    comments = post.get("numComments", 0) or post.get("comments", 0) or 0
     read_time = min(post.get("readTime", 0) or 0, 20)
 
     eng_score = (
@@ -101,7 +103,8 @@ def parse_dailydev_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
     Returns:
         List of normalized item dicts
     """
-    posts = response.get("posts", [])
+    # API returns posts in 'data' array (or 'posts' for mock/legacy)
+    posts = response.get("data", []) or response.get("posts", [])
     if not posts:
         return []
 
@@ -119,11 +122,11 @@ def parse_dailydev_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not title or not url:
             continue
 
-        # Parse date from createdAt ISO format
+        # Parse date — prefer publishedAt over createdAt
         date_str = None
-        created_at = post.get("createdAt", "")
-        if created_at and len(created_at) >= 10:
-            date_str = created_at[:10]  # YYYY-MM-DD from ISO
+        pub_date = post.get("publishedAt", "") or post.get("createdAt", "")
+        if pub_date and len(pub_date) >= 10:
+            date_str = pub_date[:10]  # YYYY-MM-DD from ISO
 
         # Author info
         author = post.get("author", {}) or {}
@@ -134,9 +137,9 @@ def parse_dailydev_response(response: Dict[str, Any]) -> List[Dict[str, Any]]:
         source = post.get("source", {}) or {}
         source_name = source.get("name", "")
 
-        # Engagement
-        upvotes = post.get("upvotes")
-        comments = post.get("comments")
+        # Engagement (API uses numUpvotes/numComments)
+        upvotes = post.get("numUpvotes") if post.get("numUpvotes") is not None else post.get("upvotes")
+        comments = post.get("numComments") if post.get("numComments") is not None else post.get("comments")
 
         engagement = {}
         if upvotes is not None or comments is not None:

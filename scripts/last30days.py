@@ -156,6 +156,23 @@ def _search_x(
     # Parse response
     x_items = twitterapi_x.parse_x_response(raw_xai or {})
 
+    # Retry with simplified query if no results (long topics get zero hits)
+    if len(x_items) == 0 and not mock and not x_error:
+        core = openai_reddit._extract_core_subject(topic)
+        if core.lower() != topic.lower():
+            try:
+                retry_raw = twitterapi_x.search_x(
+                    config["TWITTERAPI_IO_KEY"],
+                    core,
+                    from_date, to_date,
+                    depth=depth,
+                )
+                x_items = twitterapi_x.parse_x_response(retry_raw)
+                if x_items:
+                    raw_xai = retry_raw
+            except Exception:
+                pass
+
     return x_items, raw_xai, x_error
 
 
