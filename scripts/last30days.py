@@ -323,8 +323,13 @@ def run_research(
 
 
 def main():
+    # Fix Unicode output on Windows (cp1252 can't encode emoji)
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(
-        description="Research a topic from the last 30 days on Reddit + X"
+        description="Research a topic from the last N days on Reddit + X"
     )
     parser.add_argument("topic", nargs="?", help="Topic to research")
     parser.add_argument("--mock", action="store_true", help="Use fixtures")
@@ -359,6 +364,14 @@ def main():
         "--include-web",
         action="store_true",
         help="Include general web search alongside Reddit/X (lower weighted)",
+    )
+    parser.add_argument(
+        "--days",
+        type=int,
+        default=30,
+        choices=range(1, 31),
+        metavar="N",
+        help="Number of days to look back (1-30, default: 30)",
     )
 
     args = parser.parse_args()
@@ -425,7 +438,7 @@ def main():
                 sys.exit(1)
 
     # Get date range
-    from_date, to_date = dates.get_date_range(30)
+    from_date, to_date = dates.get_date_range(args.days)
 
     # Check what keys are missing for promo messaging
     missing_keys = env.get_missing_keys(config)
@@ -543,7 +556,7 @@ def main():
         progress.show_complete(len(deduped_reddit), len(deduped_x))
 
     # Output result
-    output_result(report, args.emit, web_needed, args.topic, from_date, to_date, missing_keys)
+    output_result(report, args.emit, web_needed, args.topic, from_date, to_date, missing_keys, args.days)
 
 
 def output_result(
@@ -554,6 +567,7 @@ def output_result(
     from_date: str = "",
     to_date: str = "",
     missing_keys: str = "none",
+    days: int = 30,
 ):
     """Output the result based on emit mode."""
     if emit_mode == "compact":
@@ -577,7 +591,7 @@ def output_result(
         print("")
         print("Claude: Use your WebSearch tool to find 8-15 relevant web pages.")
         print("EXCLUDE: reddit.com, x.com, twitter.com (already covered above)")
-        print("INCLUDE: blogs, docs, news, tutorials from the last 30 days")
+        print(f"INCLUDE: blogs, docs, news, tutorials from the last {days} days")
         print("")
         print("After searching, synthesize WebSearch results WITH the Reddit/X")
         print("results above. WebSearch items should rank LOWER than comparable")

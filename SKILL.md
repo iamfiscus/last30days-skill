@@ -1,7 +1,7 @@
 ---
 name: last30days
 description: Research a topic from the last 30 days on Reddit + X + Web, become an expert, and write copy-paste-ready prompts for the user's target tool.
-argument-hint: '"[topic] for [tool]" or "[topic]"'
+argument-hint: '"[topic]" or "[topic] --days=7"'
 allowed-tools: Bash, Read, Write, AskUserQuestion, WebSearch
 ---
 
@@ -103,7 +103,8 @@ For ALL query types:
 - INCLUDE: blogs, tutorials, docs, news, GitHub repos
 - **DO NOT output "Sources:" list** - this is noise, we'll show stats at the end
 
-**Depth options** (passed through from user's command):
+**Options** (passed through from user's command):
+- `--days=N` → Look back N days instead of 30 (e.g., `--days=7` for weekly roundup)
 - `--quick` → Faster, fewer sources (8-12 each)
 - (default) → Balanced (20-30 each)
 - `--deep` → Comprehensive (50-70 Reddit, 40-60 X)
