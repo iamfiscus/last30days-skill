@@ -132,6 +132,37 @@ This example shows /last30days learning that **JSON prompts dominate** the Nano 
 
 ---
 
+## Example: Kanye West (Current Events)
+
+**Query:** `/last30days kanye west`
+
+**Research Output:**
+> **The Apology Arc** — On January 26, Ye published a full-page letter in The Wall Street Journal titled "To Those I've Hurt," apologizing for antisemitic comments and attributing it to a four-month manic episode, an undiagnosed brain injury from his 2002 car crash, and bipolar type-1 disorder. The ADL called it "long overdue" but said it "doesn't automatically undo his long history of antisemitism." Then on February 9, he posted "I love Hitler now what" — blowing up the goodwill almost immediately, per The Mirror. Fans on X are split on whether the apology was genuine or just pre-album PR, per @dekreationz's viral post (8.6K likes).
+>
+> **BULLY Album** — Twelfth studio album set for March 20 via YZY and Gamma. 13 tracks with Peso Pluma, Playboi Carti, and Ty Dolla Sign features. Sonically it leans toward 808s/MBDTF territory — more singing than rapping. Ye has reportedly removed all deepfaked/AI-generated vocals from the final version, per Rolling Stone.
+>
+> **Bianca Censori Breaks Silence** — In a Vanity Fair tell-all, Bianca spoke publicly for the first time about their marriage, saying "This year was a lot like doing CPR for months." She confirmed her outfits are her own choice and revealed their relationship started when she was head of architecture at Yeezy, per TMZ.
+>
+> **Kim/Instagram Drama** — A screenshot of Ye allegedly commenting on Kim's Complex magazine post went mega-viral on X. Multiple Grok fact-checks confirmed it's likely fabricated, but @dekreationz's post racked up nearly 9K likes regardless — showing the Ye/Kim narrative still drives massive engagement.
+
+**Key patterns from the research:**
+1. Apology-then-relapse cycle — The WSJ letter was immediately undercut by new inflammatory posts, making sincerity the dominant debate, per Washington Post
+2. Album as PR vehicle — Skeptics across X tie the apology's timing directly to BULLY's March 20 release, per @trustGod_007
+3. Bianca as her own story — Transitioning from "Kanye's wife" to individual public figure through Vanity Fair
+4. Fake screenshot virality — Fabricated Ye content still goes massively viral before debunking, per @dekreationz
+
+**Research Stats:** 3 Reddit threads (193 upvotes, 192 comments) + 33 X posts (9,295 likes, 279 reposts) from r/Kanye, r/hiphopheads, @dekreationz (8,684 likes), @trustGod_007
+
+**Follow-up suggestions offered:**
+> I'm now an expert on Kanye West. Some things I can help with:
+> - What's the real story behind the apology letter — genuine accountability or pre-album PR?
+> - Deep dive on BULLY: tracklist, Gamma deal, and removal of AI vocals
+> - The Bianca Censori Vanity Fair interview — what she actually said vs. the tabloid headlines
+
+This example shows /last30days as a **current events research tool** — no prompting, no target tool, just "what's happening with Kanye?" and you get a synthesized expert briefing pulled from 33 X posts and 3 Reddit threads with real engagement data.
+
+---
+
 ## Example: Legal Prompting (Hallucination Prevention)
 
 **Query:** `/last30days prompting techniques for chatgpt for legal questions`
