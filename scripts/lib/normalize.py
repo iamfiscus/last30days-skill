@@ -174,7 +174,7 @@ def normalize_youtube_items(
 
     for item in items:
         # Parse engagement
-        eng_raw = item.get("engagement", {})
+        eng_raw = item.get("engagement") or {}
         engagement = schema.Engagement(
             views=eng_raw.get("views"),
             likes=eng_raw.get("likes"),

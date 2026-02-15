@@ -185,7 +185,7 @@ def _run_topic(topic: dict) -> dict:
                 "title": item.get("text", "")[:100],
                 "author": item.get("author_handle", ""),
                 "content": item.get("text", ""),
-                "engagement_score": item.get("engagement", {}).get("likes", 0),
+                "engagement_score": (item.get("engagement") or {}).get("likes", 0),
                 "relevance_score": item.get("relevance", 0),
             })
 
