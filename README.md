@@ -2,10 +2,11 @@
 
 **The AI world reinvents itself every month. This Claude Code skill keeps you current.** /last30days researches your topic across Reddit, X, YouTube, and the web from the last 30 days, finds what the community is actually upvoting, sharing, and saying on camera, and writes you a prompt that works today, not six months ago. Whether it's Ralph Wiggum loops, Suno music prompts, or the latest Midjourney techniques, you'll prompt like someone who's been paying attention.
 
-**New in V2.1 — two headline features:**
+**New in V2.1 — three headline features:**
 
-- **YouTube transcripts as a 4th source.** When yt-dlp is installed, /last30days automatically searches YouTube, grabs view counts, and extracts auto-generated transcripts from the top videos. A 20-minute review contains 10x the signal of a tweet — now the skill reads it. Inspired by [@steipete](https://x.com/steipete)'s yt-dlp + [summarize](https://github.com/steipete/summarize) toolchain.
-- **X search is fully bundled.** No external `bird` CLI or xAI API key needed. Just Node.js 22+ and your browser cookies. Uses a vendored subset of Bird's Twitter GraphQL client (MIT licensed, originally by [@steipete](https://x.com/steipete)).
+1. **Open-class skill with watchlists.** Add any topic to a watchlist — your competitors, your partners, your board members, an emerging technology — and /last30days automatically re-researches it on a schedule. Set it once, get a briefing every 30 days (or every week). This is the skill that runs while you sleep.
+2. **YouTube transcripts as a 4th source.** When yt-dlp is installed, /last30days automatically searches YouTube, grabs view counts, and extracts auto-generated transcripts from the top videos. A 20-minute review contains 10x the signal of a tweet — now the skill reads it. Inspired by [@steipete](https://x.com/steipete)'s yt-dlp + [summarize](https://github.com/steipete/summarize) toolchain.
+3. **Works in OpenAI Codex CLI.** Same skill, same engine. Install to `~/.agents/skills/last30days` and invoke with `$last30days`. Claude Code and Codex users get the same research.
 
 **New in V2:** Dramatically better search results. Smarter query construction finds posts that V1 missed entirely, and a new two-phase search automatically discovers key @handles and subreddits from initial results, then drills deeper. Free X search (no xAI key needed), `--days=N` for flexible lookback, and automatic model fallback. [Full changelog below.](#whats-new-in-v2)
 
@@ -63,20 +64,32 @@ git clone https://github.com/mvanhorn/last30days-skill.git ~/.agents/skills/last
 
 Same SKILL.md, same Python engine, same scripts. The `agents/openai.yaml` provides Codex-specific discovery metadata. Invoke with `$last30days` or through the `/skills` menu.
 
-### Open Variant (Watchlist + Briefings)
+### Open Variant (Watchlist + Briefings) — Recommended
 
-The repo includes an **open variant** that adds persistent knowledge accumulation on top of the one-shot research engine:
+The killer use case: **set up research that runs itself.** Add your competitors, partners, board members, or any topic to a watchlist. /last30days re-researches them on a daily or weekly schedule and accumulates findings in a local database. Ask for a briefing anytime.
 
-- **Watchlist** — Track topics over time with `watch add "topic"`, run research on a schedule
+```bash
+# Enable the open variant
+cp variants/open/SKILL.md ~/.claude/skills/last30days/SKILL.md
+
+# Add topics to your watchlist
+/last30days watch add "Competitor X product launches"
+/last30days watch add "Board member Jane Doe" --weekly
+/last30days watch add "AI video generation tools"
+
+# Get your briefing
+/last30days briefing
+
+# Search accumulated knowledge
+/last30days history "what did Competitor X ship?"
+```
+
+The open variant adds four modes on top of one-shot research:
+
+- **Watchlist** — Track topics over time with `watch add "topic"`, run on a schedule
 - **Briefings** — Daily/weekly digests synthesized from accumulated findings
 - **History** — Query and search your research database with full-text search
 - **Native web search** — Built-in web search backends (Parallel AI, Brave, OpenRouter) run alongside Reddit/X/YouTube
-
-To use the open variant instead of the default one-shot skill:
-
-```bash
-cp variants/open/SKILL.md ~/.claude/skills/last30days/SKILL.md
-```
 
 Both variants use the same Python engine and scripts directory. The open variant adds command routing (`watch`, `briefing`, `history`) and references mode-specific instruction files.
 
@@ -883,6 +896,12 @@ V2 finds significantly more content than V1. Two major improvements:
 
 **Reddit JSON enrichment** - Fetches real upvote and comment counts from Reddit's free API for every thread, giving you actual engagement signals instead of estimates.
 
+### Open-class skill with watchlists (v2.1)
+
+**The biggest feature in v2.1 isn't a new source — it's what happens when you stop thinking of /last30days as a one-shot tool.** The open variant adds a watchlist, briefings, and history. Add `"Competitor X"` to your watchlist, set it to weekly, and every Monday morning you have a research briefing waiting — what they shipped, what people said about it, what Reddit and X are discussing. Do the same for your partners, your board members, an emerging technology you're tracking. The research accumulates in a local SQLite database, and you can query it anytime with natural language.
+
+This is the use case that changes how you work: **research that runs while you sleep.**
+
 ### YouTube search with transcripts (v2.1)
 
 **YouTube is now a 4th research source.** When yt-dlp is installed (`brew install yt-dlp`), /last30days automatically searches YouTube for your topic, fetches view counts and engagement data, and extracts auto-generated transcripts from the top videos. Transcripts give the synthesis engine actual content to work with — not just titles.
@@ -890,6 +909,10 @@ V2 finds significantly more content than V1. Two major improvements:
 YouTube items go through the same scoring pipeline (relevance + recency + engagement) and are deduped, scored, and rendered alongside Reddit and X results. Views dominate YouTube's engagement formula since they're the primary discovery signal.
 
 Inspired by [Peter Steinberger](https://x.com/steipete)'s yt-dlp + [summarize](https://github.com/steipete/summarize) toolchain. Peter's approach of combining yt-dlp for search/metadata with transcript extraction for content analysis was the direct inspiration for this feature.
+
+### Works in OpenAI Codex CLI (v2.1)
+
+**Same skill, different host.** Install to `~/.agents/skills/last30days` and invoke with `$last30days` inside Codex. The `agents/openai.yaml` provides Codex-specific discovery metadata. Same SKILL.md, same Python engine, same four sources.
 
 ### Bundled X search (v2.1)
 
@@ -919,4 +942,4 @@ Thanks to the contributors who helped shape V2:
 
 *30 days of research. 30 seconds of work. Four sources. Zero stale prompts.*
 
-*Reddit. X. YouTube. Web. — All synthesized into expert answers and copy-paste prompts.*
+*Set it once. Get briefings forever. Reddit. X. YouTube. Web. — All synthesized into expert answers and copy-paste prompts.*
