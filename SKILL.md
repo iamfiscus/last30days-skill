@@ -4,6 +4,29 @@ version: "2.1"
 description: "Research a topic from the last 30 days. Also triggered by 'last30'. Sources: Reddit, X, YouTube, web. Become an expert and write copy-paste-ready prompts."
 argument-hint: 'last30 AI video tools, last30 best project management tools'
 allowed-tools: Bash, Read, Write, AskUserQuestion, WebSearch
+homepage: https://github.com/mvanhorn/last30days-skill
+user-invocable: true
+disable-model-invocation: true
+metadata:
+  clawdbot:
+    emoji: "📰"
+    requires:
+      env:
+        - OPENAI_API_KEY
+      bins:
+        - node
+        - python3
+    primaryEnv: OPENAI_API_KEY
+    files:
+      - "scripts/*"
+    homepage: https://github.com/mvanhorn/last30days-skill
+    tags:
+      - research
+      - reddit
+      - x
+      - youtube
+      - trends
+      - prompts
 ---
 
 # last30days v2.1: Research Any Topic from the Last 30 Days
@@ -452,3 +475,27 @@ After delivering a prompt, end with:
 
 Want another prompt? Just tell me what you're creating next.
 ```
+
+---
+
+## Security & Permissions
+
+**What this skill does:**
+- Sends search queries to OpenAI's Responses API (`api.openai.com`) for Reddit discovery
+- Sends search queries to Twitter's GraphQL API (via browser cookie auth) or xAI's API (`api.x.ai`) for X search
+- Runs `yt-dlp` locally for YouTube search and transcript extraction (no API key, public data)
+- Optionally sends search queries to Brave Search API, Parallel AI API, or OpenRouter API for web search
+- Fetches public Reddit thread data from `reddit.com` for engagement metrics
+- Stores research findings in local SQLite database (watchlist mode only)
+
+**What this skill does NOT do:**
+- Does not post, like, or modify content on any platform
+- Does not access your Reddit, X, or YouTube accounts
+- Does not share API keys between providers (OpenAI key only goes to api.openai.com, etc.)
+- Does not log, cache, or write API keys to output files
+- Does not send data to any endpoint not listed above
+- Cannot be invoked autonomously by the agent (`disable-model-invocation: true`)
+
+**Bundled scripts:** `scripts/last30days.py` (main research engine), `scripts/lib/` (search, enrichment, rendering modules), `scripts/lib/vendor/bird-search/` (vendored X search client, MIT licensed)
+
+Review scripts before first use to verify behavior.

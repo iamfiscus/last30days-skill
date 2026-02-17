@@ -4,7 +4,7 @@
 
 **New in V2.1  - three headline features:**
 
-1. **Open-class skill with watchlists.** Add any topic to a watchlist  - your competitors, your partners, your board members, an emerging technology  - and /last30days re-researches it on demand or via cron. Designed for always-on environments like [Open Claw](https://github.com/openclaw/openclaw) where a bot can run research on a schedule and accumulate findings over time.
+1. **Open-class skill with watchlists.** Add any topic to a watchlist  - your competitors, specific people, emerging technologies  - and /last30days re-researches it on demand or via cron. Designed for always-on environments like [Open Claw](https://github.com/openclaw/openclaw) where a bot can run research on a schedule and accumulate findings over time.
 2. **YouTube transcripts as a 4th source.** When yt-dlp is installed, /last30days automatically searches YouTube, grabs view counts, and extracts auto-generated transcripts from the top videos. A 20-minute review contains 10x the signal of a single post - now the skill reads it. Inspired by [@steipete](https://x.com/steipete)'s yt-dlp + [summarize](https://github.com/steipete/summarize) toolchain.
 3. **Works in OpenAI Codex CLI.** Same skill, same engine. Install to `~/.agents/skills/last30days` and invoke with `$last30days`. Claude Code and Codex users get the same research.
 
@@ -66,7 +66,7 @@ Same SKILL.md, same Python engine, same scripts. The `agents/openai.yaml` provid
 
 ### Open Variant (Watchlist + Briefings)  - For Always-On Bots
 
-**Designed for [Open Claw](https://github.com/openclaw/openclaw) and similar always-on AI environments.** Add your competitors, partners, board members, or any topic to a watchlist. When paired with a cron job or always-on bot, /last30days re-researches them on a schedule and accumulates findings in a local SQLite database. Ask for a briefing anytime.
+**Designed for [Open Claw](https://github.com/openclaw/openclaw) and similar always-on AI environments.** Add your competitors, specific people, or any topic to a watchlist. When paired with a cron job or always-on bot, /last30days re-researches them on a schedule and accumulates findings in a local SQLite database. Ask for a briefing anytime.
 
 **Important:** The watchlist stores schedules as metadata, but nothing triggers runs automatically. You need an external scheduler (cron, launchd, or an always-on bot like Open Claw) to call `watchlist.py run-all` on a timer. In plain Claude Code, you can run `watch run-one` and `watch run-all` manually, but there's no background scheduling.
 
@@ -76,14 +76,12 @@ cp variants/open/SKILL.md ~/.claude/skills/last30days/SKILL.md
 
 # Add topics to your watchlist
 last30 watch my biggest competitor every week
-last30 watch AI video generation tools
-last30 tell me once a month about what my board members are up to
+last30 watch Peter Steinberger every 30 days
+last30 watch AI video tools monthly
+last30 Y Combinator hot companies end of April and end of September
 
 # Run research manually (or let your bot's cron handle it)
 last30 run all my watched topics
-
-# Get your briefing
-last30 give me my briefing
 
 # Search accumulated knowledge
 last30 what have you found about AI video?

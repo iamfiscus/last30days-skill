@@ -108,10 +108,9 @@ You can unlock more sources with API keys — just ask me how and I'll walk you 
 Some examples of what you can do:
 - "last30 what are people saying about Figma"
 - "last30 watch my biggest competitor every week"
-- "last30 tell me once a month about what my board members are up to"
-- "last30 give me my morning briefing"
+- "last30 watch Peter Steinberger every 30 days"
+- "last30 watch AI video tools monthly"
 - "last30 what have you found about AI video?"
-- "last30 set a budget so you don't go crazy"
 
 Just start with "last30" and talk to me like normal.
 """
