@@ -390,22 +390,24 @@ def _search_youtube(
     to_date: str,
     depth: str,
     mock: bool = False,
+    use_tubelab: bool = False,
 ) -> tuple:
-    """Search YouTube, dispatching to TubeLab or yt-dlp based on available config.
+    """Search YouTube, dispatching to TubeLab or yt-dlp.
 
-    If TUBELAB_API_KEY is present, uses TubeLab. Otherwise falls back to yt-dlp.
+    yt-dlp is the default (free, no API key). TubeLab is used only when
+    explicitly requested via --tubelab flag and TUBELAB_API_KEY is present.
 
     Returns:
         Tuple of (youtube_items, youtube_error)
         (raw_youtube is only available via TubeLab path)
     """
-    if config.get("TUBELAB_API_KEY") or mock:
+    if use_tubelab and (config.get("TUBELAB_API_KEY") or mock):
         youtube_items, _raw_youtube, youtube_error = _search_youtube_tubelab(
             topic, config, from_date, to_date, depth, mock,
         )
         return youtube_items, youtube_error
 
-    # Fallback to yt-dlp
+    # Default: use yt-dlp (free, no API key needed)
     return _search_youtube_ytdlp(topic, from_date, to_date, depth)
 
 
@@ -643,6 +645,7 @@ def run_research(
     run_dailydev: bool = False,
     x_source: str = "twitterapi",
     run_youtube: bool = False,
+    use_tubelab: bool = False,
     timeouts: dict = None,
 ) -> tuple:
     """Run the research pipeline.
@@ -710,6 +713,7 @@ def run_research(
             try:
                 youtube_items, youtube_error = _search_youtube(
                     topic, config, from_date, to_date, depth, mock,
+                    use_tubelab=use_tubelab,
                 )
                 if youtube_error and progress:
                     progress.show_error(f"YouTube error: {youtube_error}")
@@ -1003,7 +1007,12 @@ def main():
     parser.add_argument(
         "--youtube",
         action="store_true",
-        help="Include YouTube videos (via TubeLab if API key present, else yt-dlp)",
+        help="Include YouTube video search (uses yt-dlp, free)",
+    )
+    parser.add_argument(
+        "--tubelab",
+        action="store_true",
+        help="Use TubeLab API for YouTube search (requires TUBELAB_API_KEY)",
     )
     parser.add_argument(
         "--days",
@@ -1091,6 +1100,7 @@ def main():
             "bird_username": x_source_status.get("bird_username"),
             "youtube_ytdlp": has_ytdlp,
             "youtube_tubelab": has_tubelab,
+            "youtube_default": "yt-dlp (use --tubelab to switch)",
             "dailydev": bool(config.get("DAILYDEV_API_KEY")),
             "web_search_backend": web_source,
             "parallel_ai": bool(config.get("PARALLEL_API_KEY")),
@@ -1125,6 +1135,7 @@ def main():
         "bird_authenticated": x_source_status.get("bird_authenticated", False),
         "bird_username": x_source_status.get("bird_username"),
         "youtube": has_ytdlp or has_tubelab,
+        "youtube_tubelab": has_tubelab,
         "web_search_backend": web_source,
     }
     ui.show_diagnostic_banner(diag)
@@ -1218,10 +1229,10 @@ def main():
         or args.mock
     )
 
-    # YouTube: auto-enable if TubeLab API key or yt-dlp available, or explicit --youtube flag
+    # YouTube: auto-enable if yt-dlp available, explicit --youtube, or --tubelab flag
     should_run_youtube = (
         args.youtube
-        or has_tubelab
+        or args.tubelab
         or has_ytdlp
         or args.mock
     )
@@ -1243,6 +1254,7 @@ def main():
         run_dailydev=should_run_dailydev,
         x_source=x_source or "twitterapi",
         run_youtube=should_run_youtube,
+        use_tubelab=args.tubelab,
         timeouts=timeouts,
     )
 

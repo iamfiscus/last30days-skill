@@ -414,11 +414,16 @@ def show_diagnostic_banner(diag: dict):
                 lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Needs Node.js 22+ (Bird is bundled)           {Colors.DIM}│{Colors.RESET}")
 
         # YouTube
+        has_tubelab = diag.get("youtube_tubelab", False)
         if has_youtube:
-            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ YouTube{Colors.RESET}   — yt-dlp found                      {Colors.DIM}│{Colors.RESET}")
+            lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.GREEN}✅ YouTube{Colors.RESET}   — yt-dlp found (default)              {Colors.DIM}│{Colors.RESET}")
+            if has_tubelab:
+                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ TubeLab available (use --tubelab flag)        {Colors.DIM}│{Colors.RESET}")
         else:
             lines.append(f"{Colors.DIM}│{Colors.RESET}  {Colors.RED}❌ YouTube{Colors.RESET}   — yt-dlp not installed                {Colors.DIM}│{Colors.RESET}")
             lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ Fix: brew install yt-dlp (free)                {Colors.DIM}│{Colors.RESET}")
+            if has_tubelab:
+                lines.append(f"{Colors.DIM}│{Colors.RESET}     └─ TubeLab available (use --tubelab flag)        {Colors.DIM}│{Colors.RESET}")
 
         # Web
         if has_web:
