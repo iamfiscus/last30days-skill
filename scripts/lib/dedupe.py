@@ -43,7 +43,7 @@ def get_item_text(item: Union[schema.RedditItem, schema.XItem, schema.DailyDevIt
     elif isinstance(item, schema.DailyDevItem):
         return item.title
     elif isinstance(item, schema.YouTubeItem):
-        return item.title
+        return f"{item.title} {item.channel_name}"
     else:
         return item.text
 
@@ -130,6 +130,7 @@ def dedupe_dailydev(
 ) -> List[schema.DailyDevItem]:
     """Dedupe DailyDev items."""
     return dedupe_items(items, threshold)
+
 
 
 def dedupe_youtube(

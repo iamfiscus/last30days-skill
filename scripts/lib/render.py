@@ -1,6 +1,8 @@
 """Output rendering for last30days skill."""
 
 import json
+import os
+import tempfile
 from pathlib import Path
 from typing import List, Optional
 
@@ -10,8 +12,17 @@ OUTPUT_DIR = Path.home() / ".local" / "share" / "last30days" / "out"
 
 
 def ensure_output_dir():
-    """Ensure output directory exists."""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    """Ensure output directory exists. Supports env override and sandbox fallback."""
+    global OUTPUT_DIR
+    env_dir = os.environ.get("LAST30DAYS_OUTPUT_DIR")
+    if env_dir:
+        OUTPUT_DIR = Path(env_dir)
+
+    try:
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        OUTPUT_DIR = Path(tempfile.gettempdir()) / "last30days" / "out"
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _assess_data_freshness(report: schema.Report) -> dict:
@@ -39,7 +50,7 @@ def _assess_data_freshness(report: schema.Report) -> dict:
 
 
 def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "none") -> str:
-    """Render compact output for Claude to synthesize.
+    """Render compact output for the assistant to synthesize.
 
     Args:
         report: Report data
@@ -65,7 +76,7 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
 
     # Web-only mode banner (when no API keys)
     if report.mode == "web-only":
-        lines.append("**🌐 WEB SEARCH MODE** - Claude will search blogs, docs & news")
+        lines.append("**🌐 WEB SEARCH MODE** - assistant will search blogs, docs & news")
         lines.append("")
         lines.append("---")
         lines.append("**⚡ Want better results?** Add API keys to unlock Reddit & X data:")
@@ -176,7 +187,41 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
                 lines.append(f"  *{item.why_relevant}*")
             lines.append("")
 
-    # Web items (if any - populated by Claude)
+    # YouTube items
+    if report.youtube_error:
+        lines.append("### YouTube Videos")
+        lines.append("")
+        lines.append(f"**ERROR:** {report.youtube_error}")
+        lines.append("")
+    elif report.youtube:
+        lines.append("### YouTube Videos")
+        lines.append("")
+        for item in report.youtube[:limit]:
+            eng_str = ""
+            if item.engagement:
+                eng = item.engagement
+                parts = []
+                if eng.views is not None:
+                    parts.append(f"{eng.views:,} views")
+                if eng.likes is not None:
+                    parts.append(f"{eng.likes:,} likes")
+                if parts:
+                    eng_str = f" [{', '.join(parts)}]"
+
+            date_str = f" ({item.date})" if item.date else ""
+
+            lines.append(f"**{item.id}** (score:{item.score}) {item.channel_name}{date_str}{eng_str}")
+            lines.append(f"  {item.title}")
+            lines.append(f"  {item.url}")
+            if item.transcript_snippet:
+                snippet = item.transcript_snippet[:200]
+                if len(item.transcript_snippet) > 200:
+                    snippet += "..."
+                lines.append(f"  Transcript: {snippet}")
+            lines.append(f"  *{item.why_relevant}*")
+            lines.append("")
+
+    # Web items (if any - populated by the assistant)
     if report.web_error:
         lines.append("### Web Results")
         lines.append("")
@@ -271,6 +316,69 @@ def render_compact(report: schema.Report, limit: int = 15, missing_keys: str = "
                 lines.append(f"  *{item.why_relevant}*")
             lines.append("")
 
+    return "\n".join(lines)
+
+
+def render_source_status(report: schema.Report, source_info: dict = None) -> str:
+    """Render source status footer showing what was used/skipped and why.
+
+    Args:
+        report: Report data
+        source_info: Dict with source availability info:
+            x_skip_reason, youtube_skip_reason, web_skip_reason
+
+    Returns:
+        Source status markdown string
+    """
+    if source_info is None:
+        source_info = {}
+
+    lines = []
+    lines.append("---")
+    lines.append("**Sources:**")
+
+    # Reddit
+    if report.reddit_error:
+        lines.append(f"  ❌ Reddit: error — {report.reddit_error}")
+    elif report.reddit:
+        lines.append(f"  ✅ Reddit: {len(report.reddit)} threads")
+    elif report.mode in ("both", "reddit-only", "all", "reddit-web"):
+        lines.append("  ⚠️ Reddit: 0 threads found")
+    else:
+        reason = source_info.get("reddit_skip_reason", "not configured")
+        lines.append(f"  ⏭️ Reddit: skipped — {reason}")
+
+    # X
+    if report.x_error:
+        lines.append(f"  ❌ X: error — {report.x_error}")
+    elif report.x:
+        lines.append(f"  ✅ X: {len(report.x)} posts")
+    elif report.mode in ("both", "x-only", "all", "x-web"):
+        lines.append("  ⚠️ X: 0 posts found")
+    else:
+        reason = source_info.get("x_skip_reason", "No Bird CLI or XAI_API_KEY")
+        lines.append(f"  ⏭️ X: skipped — {reason}")
+
+    # YouTube
+    if report.youtube_error:
+        lines.append(f"  ❌ YouTube: error — {report.youtube_error}")
+    elif report.youtube:
+        with_transcripts = sum(1 for v in report.youtube if getattr(v, 'transcript_snippet', None))
+        lines.append(f"  ✅ YouTube: {len(report.youtube)} videos ({with_transcripts} with transcripts)")
+    else:
+        reason = source_info.get("youtube_skip_reason", "yt-dlp not installed (brew install yt-dlp)")
+        lines.append(f"  ⏭️ YouTube: skipped — {reason}")
+
+    # Web
+    if report.web_error:
+        lines.append(f"  ❌ Web: error — {report.web_error}")
+    elif report.web:
+        lines.append(f"  ✅ Web: {len(report.web)} pages")
+    else:
+        reason = source_info.get("web_skip_reason", "assistant will use WebSearch")
+        lines.append(f"  ⚡ Web: {reason}")
+
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -471,15 +579,15 @@ def render_full_report(report: schema.Report) -> str:
 
             lines.append("")
 
-    # Placeholders for Claude synthesis
+    # Placeholders for assistant synthesis
     lines.append("## Best Practices")
     lines.append("")
-    lines.append("*To be synthesized by Claude*")
+    lines.append("*To be synthesized by assistant*")
     lines.append("")
 
     lines.append("## Prompt Pack")
     lines.append("")
-    lines.append("*To be synthesized by Claude*")
+    lines.append("*To be synthesized by assistant*")
     lines.append("")
 
     return "\n".join(lines)

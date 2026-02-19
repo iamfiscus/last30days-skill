@@ -220,14 +220,15 @@ class YouTubeItem:
     """Normalized YouTube video item."""
     id: str
     title: str
-    url: str  # youtube.com/watch?v=...
+    url: str
     channel_name: str
-    channel_id: str
+    channel_id: str = ""
     date: Optional[str] = None
-    date_confidence: str = "high"  # API provides exact dates
-    duration: Optional[int] = None  # seconds
+    date_confidence: str = "high"
+    duration: Optional[int] = None
     thumbnail: str = ""
-    engagement: Optional[Engagement] = None  # uses views, likes, num_comments
+    engagement: Optional[Engagement] = None
+    transcript_snippet: str = ""
     relevance: float = 0.5
     why_relevant: str = ""
     subs: SubScores = field(default_factory=SubScores)
@@ -245,6 +246,7 @@ class YouTubeItem:
             'duration': self.duration,
             'thumbnail': self.thumbnail,
             'engagement': self.engagement.to_dict() if self.engagement else None,
+            'transcript_snippet': self.transcript_snippet,
             'relevance': self.relevance,
             'why_relevant': self.why_relevant,
             'subs': self.subs.to_dict(),
@@ -431,6 +433,7 @@ class Report:
                 duration=y.get('duration'),
                 thumbnail=y.get('thumbnail', ''),
                 engagement=eng,
+                transcript_snippet=y.get('transcript_snippet', ''),
                 relevance=y.get('relevance', 0.5),
                 why_relevant=y.get('why_relevant', ''),
                 subs=subs,

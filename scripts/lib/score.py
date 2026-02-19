@@ -21,7 +21,7 @@ WEBSEARCH_NO_DATE_PENALTY = 20  # Heavy penalty for no date signals (low confide
 
 # Default engagement score for unknown
 DEFAULT_ENGAGEMENT = 35
-UNKNOWN_ENGAGEMENT_PENALTY = 10
+UNKNOWN_ENGAGEMENT_PENALTY = 3
 
 
 def log1p_safe(x: Optional[int]) -> float:
@@ -152,9 +152,9 @@ def score_reddit_items(items: List[schema.RedditItem]) -> List[schema.RedditItem
 
         # Apply penalty for low date confidence
         if item.date_confidence == "low":
-            overall -= 10
-        elif item.date_confidence == "med":
             overall -= 5
+        elif item.date_confidence == "med":
+            overall -= 2
 
         item.score = max(0, min(100, int(overall)))
 
@@ -212,9 +212,9 @@ def score_x_items(items: List[schema.XItem]) -> List[schema.XItem]:
 
         # Apply penalty for low date confidence
         if item.date_confidence == "low":
-            overall -= 10
-        elif item.date_confidence == "med":
             overall -= 5
+        elif item.date_confidence == "med":
+            overall -= 2
 
         item.score = max(0, min(100, int(overall)))
 
@@ -451,16 +451,16 @@ def sort_items(items: List[Union[schema.RedditItem, schema.XItem, schema.WebSear
         date = item.date or "0000-00-00"
         date_key = -int(date.replace("-", ""))
 
-        # Tertiary: source priority (Reddit > X > WebSearch > DailyDev)
+        # Tertiary: source priority (Reddit > X > YouTube > DailyDev > WebSearch)
         if isinstance(item, schema.RedditItem):
             source_priority = 0
         elif isinstance(item, schema.XItem):
             source_priority = 1
-        elif isinstance(item, schema.WebSearchItem):
+        elif isinstance(item, schema.YouTubeItem):
             source_priority = 2
         elif isinstance(item, schema.DailyDevItem):
             source_priority = 3
-        elif isinstance(item, schema.YouTubeItem):
+        elif isinstance(item, schema.WebSearchItem):
             source_priority = 4
         else:
             source_priority = 5

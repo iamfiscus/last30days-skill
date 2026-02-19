@@ -206,6 +206,7 @@ def normalize_dailydev_items(
     return normalized
 
 
+
 def normalize_youtube_items(
     items: List[Dict[str, Any]],
     from_date: str,
@@ -231,7 +232,7 @@ def normalize_youtube_items(
             engagement = schema.Engagement(
                 views=eng_raw.get("views"),
                 likes=eng_raw.get("likes"),
-                num_comments=eng_raw.get("num_comments"),
+                num_comments=eng_raw.get("num_comments") or eng_raw.get("comments"),
             )
 
         # Determine date confidence
@@ -239,7 +240,7 @@ def normalize_youtube_items(
         date_confidence = dates.get_date_confidence(date_str, from_date, to_date)
 
         normalized.append(schema.YouTubeItem(
-            id=item.get("id", ""),
+            id=item.get("video_id") or item.get("id", ""),
             title=item.get("title", ""),
             url=item.get("url", ""),
             channel_name=item.get("channel_name", ""),
@@ -249,6 +250,7 @@ def normalize_youtube_items(
             duration=item.get("duration"),
             thumbnail=item.get("thumbnail", ""),
             engagement=engagement,
+            transcript_snippet=item.get("transcript_snippet", ""),
             relevance=item.get("relevance", 0.5),
             why_relevant=item.get("why_relevant", ""),
         ))
