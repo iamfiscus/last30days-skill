@@ -1333,7 +1333,7 @@ def main():
     report.context_snippet_md = render.render_context_snippet(report)
 
     # Write outputs
-    render.write_outputs(report, raw_openai, raw_xai, raw_reddit_enriched, raw_dailydev, raw_youtube)
+    render.write_outputs(report, raw_openai, raw_xai, raw_reddit_enriched, raw_dailydev)
 
     # Show completion
     if sources == "web":
